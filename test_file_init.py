@@ -11,3 +11,6 @@ y = np.sin(x)
 
 plt.plot(x, y)
 plt.show()
+
+
+### THis si added to see how the branches are branching and merging works
