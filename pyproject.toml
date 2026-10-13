@@ -1,0 +1,17 @@
+[project]
+name = "modelling-26-3d-printer"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "lrgooijer",email = "luuksbrievenbus@gmail.com"}
+]
+requires-python = ">=3.13"
+dependencies = [
+    "matplotlib (>=3.11.2,<4.0.0)",
+    "numpy (>=2.5.4,<3.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
