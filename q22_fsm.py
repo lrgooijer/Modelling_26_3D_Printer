@@ -11,11 +11,12 @@ class Q22FSM(StateMachine):
     H1 = q0State.to(q0State) | q2State.to(q2State) | q3State.to(q2State) | q1State.to(q0State)
     V1 = q0State.to(q0State) | q1State.to(q1State) | q3State.to(q1State) | q2State.to(q0State)
 
+# TODO will not work atm when we only know current and past states, need a newe function for that
 
-def run_fsm(test_sequence: list[str])-> list[str]:
+def run_fsm(sequence: list[str])-> list[str]: 
     fsm = Q22FSM()
     state_sequence = []
-    for input in test_sequence:
+    for input in sequence:
         fsm.send(input)
         state = fsm.current_state.id
         state_sequence.append(state)
