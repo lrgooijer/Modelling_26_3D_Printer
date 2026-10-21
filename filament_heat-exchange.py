@@ -29,7 +29,7 @@ def heat_exchange_per_unit_volume(T:np.ndarray,i:int ,n_printed:int) -> float:
     This function calculates the heat exchange of a cell. 
     Based on the Heat exchange with the surroundings and the internal conduction of the filament.
     """
-    conduction_coff : float = (k*w**2/norm_pc) # TODO pretty sure this is wrong
+    conduction_coff : float = (k/norm_pc*delta_x**2)
     air_coff : float = (h_air/norm_pc)
     plate_coff : float = (h_plate/norm_pc)
     if n_printed == 1 : # Only one printed, no neighbours
@@ -65,13 +65,14 @@ def simulate_printing()-> list[float]:
     """
     T = np.full(I_MAX, np.nan) 
     n_printed = 0
-    n_steps = 100
+    n_steps = 400 #TODO make an stopping criteria basd on filament cooling
     dt : int = 1
     T_outcomes =np.full((n_steps, I_MAX), np.nan)
 
     for time_step in range(n_steps):
-        T[n_printed]= T_NOZZLE
-        n_printed += 1 # TODO maybe try to decouple printing for timesteps, to make it fancier
+        if n_printed < I_MAX:
+            T[n_printed]= T_NOZZLE
+            n_printed += 1
         dTdt = compute_temperature_change(T, n_printed)
         T[:n_printed] += dt * dTdt
         T_outcomes[time_step] = T
@@ -82,6 +83,10 @@ def simulate_printing()-> list[float]:
 if __name__ == "__main__":
     distance, time, T_outcomes = simulate_printing()
     fig, ax = plt.subplots()
+    # bar = ax.imshow(T_outcomes[0][np.newaxis, :],cmap='hot', vmin=t_air, vmax=T_NOZZLE, aspect='auto', extent=[0, I_MAX * delta_x, 0, 1])
+    # fig.colorbar(bar, ax=ax, label='Temperature (°C)')
+    # ax.set_xlabel('Distance (m)')
+    # ax.set_yticks([])
     line, = ax.plot([], [], "r-")
     ax.set_ylim(0,T_NOZZLE+10)
     ax.set_xlim(0, I_MAX * delta_x)
@@ -89,8 +94,9 @@ if __name__ == "__main__":
 
     def update(frame):
         line.set_data(distance, T_outcomes[frame])
+        #bar.set_data(T_outcomes[frame][np.newaxis, :])
         title.set_text(f'Temperature Distribution at Time {frame} s')
-        return line, title
+        return line, title #, bar
 
 
 simulation = animation.FuncAnimation(fig, update, frames=range(len(time)), interval=100)   
