@@ -636,6 +636,24 @@ files = [
 six = ">=1.5"
 
 [[package]]
+name = "python-statemachine"
+version = "3.2.2"
+description = "Python Finite State Machines made easy."
+optional = false
+python-versions = ">=3.10"
+groups = ["main"]
+files = [
+    {file = "python_statemachine-3.2.2-py3-none-any.whl", hash = "sha256:141d20e00776815692e424d3df825b1bd7ccaeedc6fda7787ddf249e767e1676"},
+    {file = "python_statemachine-3.2.2.tar.gz", hash = "sha256:5968c5e07a537f7531b8b1d0a0d5067a3452c88941fa0ac6c244870d48f78325"},
+]
+
+[package.extras]
+diagrams = ["pydot (>=4.0.1)"]
+io = ["jsonschema (>=4.18)", "pyyaml (>=6.0)"]
+validation = ["jsonschema (>=4.18)"]
+yaml = ["pyyaml (>=6.0)"]
+
+[[package]]
 name = "six"
 version = "1.17.0"
 description = "Python 2 and 3 compatibility utilities"
@@ -650,4 +668,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.13"
-content-hash = "6c9b2130b0f6c12ed30dda66faa37cdc04b23c1f6b12192c3ccc02207cbee14f"
+content-hash = "9d6909345ae087225ce6e45f757e2d055c5aa0110cf74844fd583547a8deb7d8"
