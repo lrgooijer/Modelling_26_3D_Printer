@@ -11,17 +11,18 @@ class Q22FSM(StateMachine):
     H1 = q0State.to(q0State) | q2State.to(q2State) | q3State.to(q2State) | q1State.to(q0State)
     V1 = q0State.to(q0State) | q1State.to(q1State) | q3State.to(q1State) | q2State.to(q0State)
 
-fsm = Q22FSM()
+
 test_sequences = [["H0","V0"],["H1","V1","H1", "H0", "V1", "V0"]]
 def run_test(test_sequence):
+    fsm = Q22FSM()
     for input in test_sequence:
         fsm.send(input)
         print(fsm.current_state.id)
-        final_state = fsm.final_states
+        final_state = fsm.current_state.id
     return final_state
 for test_sequence in test_sequences:
     final_test_state = run_test(test_sequence)
-    assert final_test_state[0] == "q3State"
+    assert final_test_state[0] == "q3"
 
 
 
