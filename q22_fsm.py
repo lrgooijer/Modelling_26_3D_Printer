@@ -11,9 +11,17 @@ class Q22FSM(StateMachine):
     H1 = q0State.to(q0State) | q2State.to(q2State) | q3State.to(q2State) | q1State.to(q0State)
     V1 = q0State.to(q0State) | q1State.to(q1State) | q3State.to(q1State) | q2State.to(q0State)
 
-# TODO will not work atm when we only know current and past states, need a newe function for that
+# To use the FSM in our pipeline, we can update our states as follows:
+#import q22_fsm
+# initialize the FSM
+# def update(sensor_input):
+#   if sensor_input reaches thresholds:
+#       fsm.send("H0")
+#   return fsm.current_state.id
 
-def run_fsm(sequence: list[str])-> list[str]: 
+
+
+def run_test_fsm(sequence: list[str])-> list[str]: 
     fsm = Q22FSM()
     state_sequence = []
     for input in sequence:
@@ -25,7 +33,7 @@ def run_fsm(sequence: list[str])-> list[str]:
 def loop_test_sequences(test_sequences: list[list[str]])-> list[list[str]]:
     output_state_sequences = []
     for test_sequence in test_sequences:
-        state_sequence = run_fsm(test_sequence)
+        state_sequence = run_test_fsm(test_sequence)
         output_state_sequences.append(state_sequence)
     return output_state_sequences
 
