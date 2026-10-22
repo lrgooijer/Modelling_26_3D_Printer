@@ -5,10 +5,10 @@ class Q21FSM(StateMachine):
     q1State = State("Stopped Printing")
     q2State = State("Moving to Wipe Position")
     q3State = State("Wiping")
-    q4State = State("Nozzle Off")
+    q4State = State("Nozzle Cooling")
     q5State = State("Loading Filament")
-    q6State = State("Nozzle On")
-    q7State = State("Moving to Print Position")
+    q6State = State("Nozzle Heating")
+    q7State = State("Moving to Saved Position")
     
     # TODO add outputs to states
 
@@ -20,7 +20,7 @@ class Q21FSM(StateMachine):
     nozzle_cooled = q4State.to(q5State)
     filament_loaded = q5State.to(q6State)
     nozzle_heated = q6State.to(q7State)
-    at_print_loc = q7State.to(q0State)
+    at_saved_loc = q7State.to(q0State)
 
 def run_test_fsm(sequence: list[str])-> list[str]: 
     fsm = Q21FSM()
@@ -36,12 +36,12 @@ if __name__=="__main__":
                     ["new_colour_req","stopped",
                      "at_wipe_loc","wipe_complete",
                      "nozzle_cooled","filament_loaded",
-                     "nozzle_heated","at_print_loc"],
+                     "nozzle_heated","at_saved_loc"],
 
                     ["new_filament_req","stopped",
                      "at_wipe_loc","wipe_complete",
                      "nozzle_cooled","filament_loaded",
-                     "nozzle_heated","at_print_loc"],
+                     "nozzle_heated","at_saved_loc"],
                     ]
 
     assert run_test_fsm(test_sequences[0]) == ['q1State', 'q2State', 'q3State', 'q4State', 'q5State', 'q6State', 'q7State', 'q0State']
