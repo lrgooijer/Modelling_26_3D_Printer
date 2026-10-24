@@ -1,14 +1,14 @@
 from statemachine import StateMachine, State
 
 class Q21FSM(StateMachine):
-    q0State = State("Printing", initial = True)
-    q1State = State("Stopped Printing")
-    q2State = State("Moving to Wipe Position")
-    q3State = State("Wiping")
-    q4State = State("Nozzle Cooling")
-    q5State = State("Loading Filament")
-    q6State = State("Nozzle Heating")
-    q7State = State("Moving to Saved Position")
+    q0State = State("Printing",value=0, initial = True)
+    q1State = State("Stopped Printing",value=1)
+    q2State = State("Moving to Wipe Position",value=2)
+    q3State = State("Wiping",value=3)
+    q4State = State("Nozzle Cooling",value=4)
+    q5State = State("Loading Filament",value=5)
+    q6State = State("Nozzle Heating",value=6)
+    q7State = State("Moving to Saved Position",value=7)
     
     def on_enter_q0State(self):
         self.output = "Printing"

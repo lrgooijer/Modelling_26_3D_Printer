@@ -2,12 +2,14 @@ import math
 import numpy as np
 from scipy.integrate import solve_ivp
 
-from q21_fsm import Q21FSM,q0State
+from q21_fsm import Q21FSM
 from q22_fsm import Q22FSM
 
+fsm_21 = Q21FSM()
+q_21 = fsm_21.current_state.value # Current state of the global FSM 2.1
 
 
-def system(t,x,u):
+def system(t,x,u,q_21):
     theta_l, theta_r, dtheta_l, dtheta_r, imotor_l, imotor_r, t_nozzle, u_cn, i_nozzle, s, tau, x_s, y_s = x
 
     u_ml, u_mr , u_n = u 
@@ -36,7 +38,10 @@ def system(t,x,u):
 
     Jtot = Jmotor +(1/2)*m*(r_m**2)
     b_plus = fric_roll + ((r_m**2)/4) * (fric_lx + fric_ly) 
-    b_min = ((r_m**2)/4) * (fric_lx - fric_ly) 
+    b_min = ((r_m**2)/4) * (fric_lx - fric_ly)
+
+    d_x_kin = (r_m/2)*(dtheta_l + dtheta_r) # x kinematics
+    d_y_kin = (r_m/2)*(dtheta_l - dtheta_r) # y kinematics
 
     dd_theta_l = (-b_plus/Jtot)*dtheta_l + (-b_min/Jtot)*dtheta_r + (Km/Jtot)* imotor_l
     dd_theta_r = (-b_min/Jtot)*dtheta_l + (-b_plus/Jtot)*dtheta_r + (Km/Jtot)*imotor_r
@@ -45,9 +50,17 @@ def system(t,x,u):
     d_t_nozzle = (1/C_tn)*(((u_cn**2)/R_n)-(1/R_tn)*(t_nozzle - t_env))
     d_ucn = (i_nozzle/Cap_n)-(u_cn/(R_n*Cap_n))
     d_i_nozzle = (-u_cn/L_n)+(u_n/L_n)
-    d_s = np.sqrt(d_x**2+d_y**2) if q0State else 0.0
-    d_tau = 1 if in {q3State, q5State} else 0
-    
+    d_s = np.sqrt(d_x_kin**2+d_y_kin**2) if q_21 == 0 else 0.0
+    d_tau = 1 if q_21 in (3,5) else 0
+    d_x_s = 0
+    d_y_s = 0
 
+    xdot = np.array([dtheta_l,dtheta_r,dd_theta_l,
+                     dd_theta_r,d_imotor_l,d_imotor_r,
+                     d_t_nozzle,d_ucn,d_i_nozzle,d_s,d_tau,d_x_s, d_y_s])
+
+    return xdot
+    
+# TODO add the function for determining the u input aka implement 1.3 and 1.5
 
     
