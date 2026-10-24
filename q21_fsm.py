@@ -10,7 +10,22 @@ class Q21FSM(StateMachine):
     q6State = State("Nozzle Heating")
     q7State = State("Moving to Saved Position")
     
-    # TODO add outputs to states
+    def on_enter_q0State(self):
+        self.output = "Printing"
+    def on_enter_q1State(self):
+        self.output = "Stopped Printing"
+    def on_enter_q2State(self):
+        self.output = "Moving to Wipe Position"
+    def on_enter_q3State(self):
+        self.output = "Wiping"
+    def on_enter_q4State(self):
+        self.output = "Nozzle Cooling"
+    def on_enter_q5State(self):
+        self.output = "Loading Filament"
+    def on_enter_q6State(self):
+        self.output = "Nozzle Heating"
+    def on_enter_q7State(self):
+        self.output = "Moving to Saved Position"
 
     new_colour_req = q0State.to(q1State)
     new_filament_req = q0State.to(q1State)
