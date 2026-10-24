@@ -18,6 +18,9 @@ norm_pc = rho * c_filament
 delta_x = 0.01 # m 
 k = 0.13
 T_NOZZLE : int = 220 #Celsius
+THRESHOLD_EQUIL = 1e-3 # Threshold for DTdt to call it an equillibrium
+N_STEPS = 1000 # keep this high,since there is a Equillibrium brake
+
 
 I_MAX = 101 # Maximum number of sections to print/ Length of filament on the spool
 
@@ -64,7 +67,7 @@ def simulate_printing()-> list[float]:
     """
     T = np.full(I_MAX, np.nan) 
     n_printed = 0
-    n_steps = 1000 #TODO make an stopping criteria basd on filament cooling
+    n_steps = N_STEPS
     dt : int = 1
     T_outcomes =np.full((n_steps, I_MAX), np.nan)
 
@@ -75,11 +78,13 @@ def simulate_printing()-> list[float]:
         dTdt = compute_temperature_change(T, n_printed)
         T[:n_printed] += dt * dTdt
         T_outcomes[time_step] = T
-        if n_printed == I_MAX and (abs(dTdt) < 1e-2).all():
+        if n_printed == I_MAX and (abs(dTdt) < THRESHOLD_EQUIL).all():
             print(f"Equillibrium threshold reached at time step {time_step}.")
             break
+    n_passed = time_step + 1
+    T_outcomes = T_outcomes[:n_passed]
     distance = np.arange(I_MAX) * delta_x
-    time = np.arange(n_steps) * dt
+    time = np.arange(n_passed) * dt
     return distance, time, T_outcomes
 
 if __name__ == "__main__":
