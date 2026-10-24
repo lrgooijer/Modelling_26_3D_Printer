@@ -63,4 +63,28 @@ def system(t,x,u,q_21):
     
 # TODO add the function for determining the u input aka implement 1.3 and 1.5
 
-    
+def u_input(t,x,q):
+    u_x = 0
+    u_y = 0
+
+    if q == 0:
+        u_x = 
+    elif q in (2,3,7): # move to wipe, wiping or saved location
+        if q == 2: # Finding wipe corner # TODO prob intiate the fsm of 2.2 here 
+            u_x = 
+            u_y =
+        if q == 3: # Wiping, move up and down
+            u_x = 
+            u_y =  
+        if q == 7: # move to saved
+            u_x = 
+            u_y = 
+    elif q == 6: # Heating
+        u_x = 0
+        u_y = 0
+        u_n = #maximum
+
+    elif q in (1,4):
+        u_x = 0
+        u_y = 0
+        u_n = 0
