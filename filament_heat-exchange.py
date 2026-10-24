@@ -19,9 +19,7 @@ delta_x = 0.01 # m
 k = 0.13
 T_NOZZLE : int = 220 #Celsius
 
-#TODO get better estimate for filament properties, and the heat transfer coefficients.
-
-I_MAX = 101
+I_MAX = 101 # Maximum number of sections to print/ Length of filament on the spool
 
 
 def heat_exchange_per_unit_volume(T:np.ndarray,i:int ,n_printed:int) -> float:
@@ -29,7 +27,7 @@ def heat_exchange_per_unit_volume(T:np.ndarray,i:int ,n_printed:int) -> float:
     This function calculates the heat exchange of a cell. 
     Based on the Heat exchange with the surroundings and the internal conduction of the filament.
     """
-    conduction_coff : float = (k/norm_pc*delta_x**2)
+    conduction_coff : float = (k/(norm_pc*delta_x**2))
     air_coff : float = (h_air/norm_pc)
     plate_coff : float = (h_plate/norm_pc)
     if n_printed == 1 : # Only one printed, no neighbours
@@ -56,6 +54,7 @@ def compute_temperature_change(T:np.ndarray, n_printed:int) -> np.ndarray:
     dTdt : np.ndarray = np.zeros(n_printed)
     for i in i_sections:
          dTdt[i] = heat_exchange_per_unit_volume(T, i, n_printed)
+
     return dTdt
 
 def simulate_printing()-> list[float]:
@@ -65,7 +64,7 @@ def simulate_printing()-> list[float]:
     """
     T = np.full(I_MAX, np.nan) 
     n_printed = 0
-    n_steps = 400 #TODO make an stopping criteria basd on filament cooling
+    n_steps = 1000 #TODO make an stopping criteria basd on filament cooling
     dt : int = 1
     T_outcomes =np.full((n_steps, I_MAX), np.nan)
 
@@ -76,6 +75,9 @@ def simulate_printing()-> list[float]:
         dTdt = compute_temperature_change(T, n_printed)
         T[:n_printed] += dt * dTdt
         T_outcomes[time_step] = T
+        if n_printed == I_MAX and (abs(dTdt) < 1e-2).all():
+            print(f"Equillibrium threshold reached at time step {time_step}.")
+            break
     distance = np.arange(I_MAX) * delta_x
     time = np.arange(n_steps) * dt
     return distance, time, T_outcomes
@@ -90,6 +92,7 @@ if __name__ == "__main__":
     line, = ax.plot([], [], "r-")
     ax.set_ylim(0,T_NOZZLE+10)
     ax.set_xlim(0, I_MAX * delta_x)
+    ax.grid(True)
     title = ax.set_title('Temperature Distribution Over Time')
 
     def update(frame):
