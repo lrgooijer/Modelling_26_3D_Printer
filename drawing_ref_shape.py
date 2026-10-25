@@ -71,8 +71,11 @@ def draw_ellipse( t ,x_c, y_c, a, b, w, u_n = 0): # TODO u_n=0 is placeholder
     u_inputs_ellipse = np.array([u_ml, u_mr, u_n])
     return u_inputs_ellipse
 
+
+t_eval =np.linspace(0,time_loop,1000)
 q = 0 # TODO move this
-ellipse_sol = solve_ivp(lambda t,s:system(t, s, draw_ellipse(t, i.x_center, i.y_center, a, b, w, u_n = 0),q),(0,time_loop), state0, max_step=1)
+ellipse_sol = solve_ivp(lambda t,s:system(t, s, draw_ellipse(t, i.x_center, i.y_center, a, b, w, u_n = 0),q),
+                        (0,time_loop), state0, method="Radau",t_eval=t_eval)
 
 x_sim = (p.r_m / 2) * (ellipse_sol.y[0] + ellipse_sol.y[1])
 y_sim = (p.r_m / 2) * (ellipse_sol.y[0] - ellipse_sol.y[1])
@@ -117,6 +120,6 @@ if __name__ == "__main__":
         return line_path, line_ml, line_mr
 
     frames = len(ellipse_sol.t) // step
-    simulation = animation.FuncAnimation(fig, update,frames=frames, interval=200, blit=True)   
+    simulation = animation.FuncAnimation(fig, update,frames=frames, interval=40, blit=True)   
     plt.show()
 
