@@ -1,14 +1,30 @@
 import numpy as np
 from scipy.integrate import solve_ivp
-from parameters import Parameters as p, Events as e
+from parameters import Parameters as p, Events as e, Q14 as f, Intial as i
+from feed_forward import draw_ellipse
 import matplotlib.pyplot as plt
 from q21_fsm import Q21FSM
 from q22_fsm import Q22FSM
 from system import system
+
  
 
 q_21 =Q21FSM()
 q_22 =Q22FSM()
+
+def u_printing(t,x):
+    w  = 2 * np.pi / f.time_loop # TODO placeholder needs to be square
+    return draw_ellipse(t, i.x_center,i.y_center, f.a, f.b)
+
+def filament_finished(t,x):
+    return x[9] - e.S_max
+filament_finished.terminal = True
+filament_finished.direction = 1
+
+def colour_change(t,x):
+    return t - e.t_C
+colour_change.terminal = True
+colour_change.direction = 1
 
 def u_wiping(t, x):
     u_y = e.u_wipe * np.sin(e.w_wipe*x[10])
@@ -45,6 +61,11 @@ def nozzle_heated(t,x):
 nozzle_heated.terminal = True
 nozzle_heated.direction = 1
 
+def reset_save_position(x):
+    x = x.copy()
+    x[11]= (p.r_m/2)*(x[0]+x[1]) # x_s
+    x[12]= (p.r_m/2)*(x[0]-x[1]) #y_s
+    return x
 
 def no_reset(x):
     return x
@@ -59,13 +80,15 @@ def reset_filament_loaded(x):
 
 
 GUARDS = {
+    0:[(filament_finished, "new_filament_req", reset_save_position),
+       (colour_change, "new_colour_req", reset_save_position)], # TODO add colour change, resest not correct
     3:[(wipe_complete, "wipe_complete", reset_tau)],
     4:[(nozzle_cooled, "nozzle_cooled", reset_tau)],
     5:[(filament_loaded, "filament_loaded", reset_filament_loaded)],
     6:[(nozzle_heated, "nozzle_heated", no_reset)]      
           }
 
-CONTROLLERS = {3:u_wiping, 4: u_cooling, 5:  u_loading, 6: u_heating}
+CONTROLLERS = {1:u_printing, 3:u_wiping, 4: u_cooling, 5:  u_loading, 6: u_heating}
 
 def simulate_hybrid(x0, fsm, t_end):
     t, x= 0.0, x0

@@ -37,13 +37,13 @@ class Intial: # TODO kinda wack name
 class Q14:
     q = 0 # Printing state
     time_loop = 200
-    a  = 0.001
-    b = 0.0001
+    a  = 0.03
+    b = 0.04
 
 
 class Events:
-    S_max = 1 #[m]
-    t_C  = 30 # [s]
+    S_max = 0.10 #[m]
+    t_C  = 1000 # TODO test with lower value Time for this colour
     w_wipe = 2*np.pi /2 # Wipe Frequency
     u_wipe = 1 # TODO placeholder Determines magnitude of the y-wipe
     dt_wipe = 20 # [s]
