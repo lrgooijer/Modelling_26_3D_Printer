@@ -32,7 +32,7 @@ def input_u_z(t, d_z_ref, dd_z_ref, ddd_z_ref, b_z):
 def draw_ellipse(t, x_c, y_c, a, b, w, u_n = 0): # TODO u_n=0 is placeholder
 
     (x_ref,d_x_ref,dd_x_ref,ddd_x_ref) = reference_ellipse(t, x_c, y_c, a, b, w)
-    (y_ref,d_y_ref,dd_y_ref, ddd_y_ref) = reference_ellipse(t, x_c, y_c, a, b, w)
+    _, (y_ref,d_y_ref,dd_y_ref, ddd_y_ref) = reference_ellipse(t, x_c, y_c, a, b, w)
 
     u_x = input_u_z(d_x_ref,dd_x_ref,ddd_x_ref)
     u_y = input_u_z(d_y_ref,dd_y_ref, ddd_y_ref)
@@ -40,5 +40,5 @@ def draw_ellipse(t, x_c, y_c, a, b, w, u_n = 0): # TODO u_n=0 is placeholder
     u_ml = u_x + u_y
     u_mr = u_x - u_y
 
-    u_inputs_ellipse = np.array([u_ml. u_mr, u_n])
+    u_inputs_ellipse = np.array([u_ml, u_mr, u_n])
     return u_inputs_ellipse

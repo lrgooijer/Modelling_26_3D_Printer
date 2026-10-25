@@ -2,8 +2,6 @@
    # TODO : Come up with better estimates for these
     #        as these are placeholders
 
-
-
 class Parameters:
     fric_lx = 0.2 # Bearing friction linear x-direction [Ns/m]
     fric_ly = 0.2 # Bearing friction linear y-direction [Ns/m]
@@ -20,3 +18,12 @@ class Parameters:
     R_n = 4 # Nozzle resistance [ohm]
     t_env = 20 # Celcius
     L_n = 4 # Nozzle inductance [H]
+
+class Bounds:
+    xmax = 0.30 # Maximum x to bound printer to print plate
+    ymax = 0.30 # Maximum y to bound printer to print plate
+
+
+class Intial:
+    x0 = Bounds.xmax / 2
+    y0 = Bounds.ymax / 2
