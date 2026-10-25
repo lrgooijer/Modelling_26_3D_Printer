@@ -26,6 +26,22 @@ def colour_change(t,x):
 colour_change.terminal = True
 colour_change.direction = 1
 
+def u_braking(t, x):
+    d_x = (p.r_m/2)*(x[2]+x[3])
+    d_y = (p.r_m/2)*(x[2]-x[3])
+    u_x = -e.Kd_brake * d_x
+    u_y = -e.Kd_brake * d_y
+    u_ml = u_x + u_y
+    u_mr = u_x - u_y
+    return np.array([u_ml, u_mr, p.heater_u_nom])
+
+def stopped(t,x):
+    d_theta = np.sqrt((x[2]**2)+(x[3]**2))
+    return d_theta - e.cap_dtheta
+stopped.terminal = True
+stopped.direction = 1
+
+
 def u_wiping(t, x):
     u_y = e.u_wipe * np.sin(e.w_wipe*x[10])
     u_ml = u_y # only y movement so u_x = 0
@@ -82,6 +98,7 @@ def reset_filament_loaded(x):
 GUARDS = {
     0:[(filament_finished, "new_filament_req", reset_save_position),
        (colour_change, "new_colour_req", reset_save_position)], # TODO add colour change, resest not correct
+    1:[(stopped,"stopped", no_reset)],
     3:[(wipe_complete, "wipe_complete", reset_tau)],
     4:[(nozzle_cooled, "nozzle_cooled", reset_tau)],
     5:[(filament_loaded, "filament_loaded", reset_filament_loaded)],

@@ -38,7 +38,7 @@ class Q14:
     q = 0 # Printing state
     time_loop = 200
     a  = 0.03
-    b = 0.04
+    b = 0.06
 
 
 class Events:
@@ -46,9 +46,11 @@ class Events:
     t_C  = 1000 # TODO test with lower value Time for this colour
     w_wipe = 2*np.pi /2 # Wipe Frequency
     u_wipe = 1 # TODO placeholder Determines magnitude of the y-wipe
+    Kd_brake = 20 # TODO placeholder determine better one
     dt_wipe = 20 # [s]
     dt_load = 30 # [s]
     T_low  = 150 # Celcius
     T_high = 220 # Celcius
+    cap_dtheta = 0.01 # Threshold stopping TODO placeholder
 
 
