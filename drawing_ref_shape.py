@@ -4,7 +4,7 @@ import matplotlib.animation as animation
 
 from scipy.integrate import solve_ivp
 from feed_forward import draw_ellipse, reference_ellipse, intial_state
-from main_simulation import system
+from system import system
 from parameters import Parameters as p, Intial as i, Bounds, Q14 as f
 
 
@@ -22,16 +22,13 @@ def simulate_ellipse(a,b, time_loop, x_c, y_c, n_points):
     x_sim = (p.r_m / 2) * (ellipse_sol.y[0] + ellipse_sol.y[1])
     y_sim = (p.r_m / 2) * (ellipse_sol.y[0] - ellipse_sol.y[1])
 
-    u_inputs = np.array([draw_ellipse(t,i.x_center,i.y_center,a,b,w) for t in ellipse_sol.t])
-
+    u_inputs = np.array([draw_ellipse(t,x_c ,y_c ,a,b,w) for t in ellipse_sol.t])
 
     return ellipse_sol, x_sim, y_sim, u_inputs, w
 
 
-
-
 if __name__ == "__main__":
-    ellipse_sol, x_sim, y_sim, u_inputs, w = simulate_ellipse(a=0.06,b=0.04,time_loop=200,
+    ellipse_sol, x_sim, y_sim, u_inputs, w = simulate_ellipse(a=f.a, b=f.b,time_loop=f.time_loop,
                                                             x_c=i.x_center, y_c=i.y_center, n_points=1000)
 
     t_sim = ellipse_sol.t
@@ -39,7 +36,7 @@ if __name__ == "__main__":
     u_ml_sim, u_mr_sim  = u_inputs[:,0], u_inputs[:,1]
     u_max =np.abs(u_inputs[:,:2]).max()
 
-    (x_ref, *_), (y_ref, *_) = reference_ellipse(t_sim, i.x_center, i.y_center, 0.06,0.04, w)
+    (x_ref, *_), (y_ref, *_) = reference_ellipse(t_sim, i.x_center, i.y_center, f.a,f.b, w)
 
     fig, (ax_path, ax_u) = plt.subplots(1,2, figsize=(12,5))
     ax_path.plot(x_ref, y_ref, "k--")
