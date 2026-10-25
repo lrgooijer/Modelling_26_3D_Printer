@@ -2,6 +2,8 @@ import math
 import numpy as np
 from scipy.integrate import solve_ivp
 
+from parameters import Parameters as p
+
 from q21_fsm import Q21FSM
 from q22_fsm import Q22FSM
 
@@ -36,20 +38,20 @@ def system(t,x,u,q_21):
     L_n = 4 # Nozzle inductance [H]
 
 
-    Jtot = Jmotor +(1/2)*m*(r_m**2)
-    b_plus = fric_roll + ((r_m**2)/4) * (fric_lx + fric_ly) 
-    b_min = ((r_m**2)/4) * (fric_lx - fric_ly)
+    Jtot = p.Jmotor +(1/2)*p.m*(p.r_m**2)
+    b_plus = p.fric_roll + ((p.r_m**2)/4) * (p.fric_lx + p.fric_ly) 
+    b_min = ((p.r_m**2)/4) * (p.fric_lx - p.fric_ly)
 
-    d_x_kin = (r_m/2)*(dtheta_l + dtheta_r) # x kinematics
-    d_y_kin = (r_m/2)*(dtheta_l - dtheta_r) # y kinematics
+    d_x_kin = (p.r_m/2)*(dtheta_l + dtheta_r) # x kinematics
+    d_y_kin = (p.r_m/2)*(dtheta_l - dtheta_r) # y kinematics
 
-    dd_theta_l = (-b_plus/Jtot)*dtheta_l + (-b_min/Jtot)*dtheta_r + (Km/Jtot)* imotor_l
-    dd_theta_r = (-b_min/Jtot)*dtheta_l + (-b_plus/Jtot)*dtheta_r + (Km/Jtot)*imotor_r
-    d_imotor_l = (-Km/Lm)*dtheta_l +(-R_motor/Lm)*imotor_l + (u_ml/Lm)
-    d_imotor_r = (-Km/Lm)*dtheta_r +(-R_motor/Lm)*imotor_r + (u_mr/Lm)
-    d_t_nozzle = (1/C_tn)*(((u_cn**2)/R_n)-(1/R_tn)*(t_nozzle - t_env))
-    d_ucn = (i_nozzle/Cap_n)-(u_cn/(R_n*Cap_n))
-    d_i_nozzle = (-u_cn/L_n)+(u_n/L_n)
+    dd_theta_l = (-b_plus/Jtot)*dtheta_l + (-b_min/Jtot)*dtheta_r + (p.Km/Jtot)* imotor_l
+    dd_theta_r = (-b_min/Jtot)*dtheta_l + (-b_plus/Jtot)*dtheta_r + (p.Km/Jtot)*imotor_r
+    d_imotor_l = (-p.Km/p.Lm)*dtheta_l +(-p.R_motor/p.Lm)*imotor_l + (u_ml/p.Lm)
+    d_imotor_r = (-p.Km/p.Lm)*dtheta_r +(-p.R_motor/p.Lm)*imotor_r + (u_mr/p.Lm)
+    d_t_nozzle = (1/p.C_tn)*(((u_cn**2)/p.R_n)-(1/p.R_tn)*(t_nozzle - p.t_env))
+    d_ucn = (i_nozzle/p.Cap_n)-(u_cn/(p.R_n*p.Cap_n))
+    d_i_nozzle = (-u_cn/p.L_n)+(u_n/p.L_n)
     d_s = np.sqrt(d_x_kin**2+d_y_kin**2) if q_21 == 0 else 0.0
     d_tau = 1 if q_21 in (3,5) else 0
     d_x_s = 0
@@ -68,23 +70,23 @@ def u_input(t,x,q):
     u_y = 0
 
     if q == 0:
-        u_x = 
-    elif q in (2,3,7): # move to wipe, wiping or saved location
-        if q == 2: # Finding wipe corner # TODO prob intiate the fsm of 2.2 here 
-            u_x = 
-            u_y =
-        if q == 3: # Wiping, move up and down
-            u_x = 
-            u_y =  
-        if q == 7: # move to saved
-            u_x = 
-            u_y = 
-    elif q == 6: # Heating
         u_x = 0
-        u_y = 0
-        u_n = #maximum
+    # elif q in (2,3,7): # move to wipe, wiping or saved location
+    #     if q == 2: # Finding wipe corner # TODO prob intiate the fsm of 2.2 here 
+    #         u_x = 
+    #         u_y =
+    #     if q == 3: # Wiping, move up and down
+    #         u_x = 
+    #         u_y =  
+    #     if q == 7: # move to saved
+    #         u_x = 
+    #         u_y = 
+    # elif q == 6: # Heating
+    #     u_x = 0
+    #     u_y = 0
+    #     u_n = #maximum
 
-    elif q in (1,4):
-        u_x = 0
-        u_y = 0
-        u_n = 0
+    # elif q in (1,4):
+    #     u_x = 0
+    #     u_y = 0
+    #     u_n = 0
