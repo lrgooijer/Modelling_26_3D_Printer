@@ -20,6 +20,7 @@ class Parameters:
     R_n = 14 # Nozzle resistance [ohm]
     t_env = 20 # Celcius
     L_n = 4 # Nozzle inductance [H]
+    heater_u_max = 40 # Maximum volatge heater [V]
 
 class Bounds:
     xmax = 0.30 # Maximum x to bound printer to print plate
@@ -39,10 +40,6 @@ class Q14:
     b = 0.0001
 
 
-class Heater:
-    u_max = 40 #TODO
-    T_low  = 30 #TODO polacholdes
-    T_high =300 # TODO
 
 class Wipe:
     x_wipe = 0.0
@@ -55,5 +52,7 @@ class Events:
     t_C  = 30 # Celsius
     dt_wipe = 20 # [s]
     dt_load = 30 # [s]
+    T_low  = 20 #T Celcius
+    T_high = 220 # Celcius
 
 

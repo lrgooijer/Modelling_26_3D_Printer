@@ -1,6 +1,6 @@
 import numpy as np
 
-from parameters import Heater as h
+from parameters import Parameters as p, Events as e
 
 from q21_fsm import Q21FSM
 from q22_fsm import Q22FSM
@@ -14,15 +14,43 @@ def u_cooling(t,x):
     return np.array([0,0,0])
 
 def nozzle_cooled(t,x):
-    return x[6] - h.T_low
+    return x[6] - e.T_low
+nozzle_cooled.terminal =True
+nozzle_cooled.direction = -1
 
 def u_loading(t, x):
     return np.array([0,0,0])
 
+def filament_loaded(t,x):
+    return x[10] - e.dt_load
+filament_loaded.terminal =True
+filament_loaded.direction =-1
+
 def u_heating(t, x):
-    return np.array([0, 0, h.u_max])
+    return np.array([0, 0, p.heater_u_max])
+
+def nozzle_heated(t,x):
+    return x[6] - e.T_high
+nozzle_heated.terminal = True
+nozzle_heated.direction = -1
 
 
+def no_reset(x):
+    return x
+def reset_tau():
+    x = x.copy(); x[10] = 0.0 # Reset tau
+    return x
+
+def resest_filament_loaded():
+    x =x.copy(); x[9] = 0.0 # Reset filament distance s+ = 0
+    return x
+
+
+GUARDS = {
+    4:[(nozzle_cooled, "nozzle_cooled", reset_tau)],
+    5:[(filament_loaded, "filament_loaded", resest_filament_loaded)],
+    6:[(nozzle_heated, "nozzle_heated", no_reset)]      
+          }
 
 CONTROLLERS = {4: u_cooling, 5:  u_loading, 6: u_heating}
 
