@@ -14,7 +14,7 @@ q_22 =Q22FSM()
 
 def u_printing(t,x):
     w  = 2 * np.pi / f.time_loop # TODO placeholder needs to be square
-    return draw_ellipse(t, i.x_center,i.y_center, f.a, f.b)
+    return draw_ellipse(t, i.x_center,i.y_center, f.a, f.b, w)
 
 def filament_finished(t,x):
     return x[9] - e.S_max
@@ -39,7 +39,7 @@ def stopped(t,x):
     d_theta = np.sqrt((x[2]**2)+(x[3]**2))
     return d_theta - e.cap_dtheta
 stopped.terminal = True
-stopped.direction = 1
+stopped.direction = -1
 
 
 def u_wiping(t, x):
@@ -105,7 +105,7 @@ GUARDS = {
     6:[(nozzle_heated, "nozzle_heated", no_reset)]      
           }
 
-CONTROLLERS = {1:u_printing, 3:u_wiping, 4: u_cooling, 5:  u_loading, 6: u_heating}
+CONTROLLERS = {0:u_printing, 1:u_braking, 3:u_wiping, 4: u_cooling, 5:  u_loading, 6: u_heating}
 
 def simulate_hybrid(x0, fsm, t_end):
     t, x= 0.0, x0
@@ -149,19 +149,24 @@ if __name__=="__main__":
     x0[8] = 1
 
     actions = simulate_hybrid(x0, fsm, t_end=2000)
-    fig, (ax_T, ax_wipe, ax_q) = plt.subplots(1,3, figsize=(18,5))
+    fig, ((ax_T, ax_wipe), (ax_q, ax_pos)) = plt.subplots(2,2, figsize=(14,10))
     for t_act, x_act, q in actions:
+        x_pos = (p.r_m/2)* (x_act[0] + x_act[1])
         y_pos = (p.r_m/2)* (x_act[0] - x_act[1])
         ax_wipe.plot(t_act, y_pos)
         ax_T.plot(t_act, x_act[6])
+        ax_pos.plot(x_pos,y_pos)
         ax_q.step(t_act, np.full_like(t_act, q), where="post")
     ax_T.axhline(e.T_low, ls="--", c="k")
-    ax_T.axhline(e.T_high, ls="--", c="k")
+    # ax_T.axhline(e.T_high, ls="--", c="k")
     ax_T.set_title("Nozzle temprature")
     ax_T.set_ylabel("T nozzle [°C]")
     ax_wipe.set_title("Wiping")
     ax_wipe.set_ylabel("y [m]")
     ax_wipe.set_xlabel("t [s]")
+    ax_pos.set_ylabel("y [m]")
+    ax_pos.set_xlabel("x [m]")
+    ax_wipe.set_title("Position")
     ax_q.set_title("State Tranistions")
     ax_q.set_ylabel("State")
     ax_q.set_xlabel("t [s]")
