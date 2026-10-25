@@ -15,9 +15,10 @@ b_min = ((p.r_m**2)/4) * (p.fric_lx - p.fric_ly)
 b_x = b_plus +  b_min
 b_y = b_plus -  b_min
 
+time_loop = 200
 a  = 0.2
 b = 0.4
-w= 2 * np.pi
+w= 2 * np.pi / time_loop
 
 
 def reference_ellipse(t, x_c, y_c, a, b, w):
@@ -57,7 +58,7 @@ def input_u_z(t, d_z_ref, dd_z_ref, ddd_z_ref, b_z):
     input_u_z = (p.Lm * Jtot/ (p.r_m* p.Km)) *ddd_z_ref +((p.Lm * b_z + p.R_motor * Jtot)/(p.r_m*p.Km))*dd_z_ref + (p.R_motor * b_z / (p.r_m * p.Km) + p.Km / p.r_m) * d_z_ref
     return input_u_z
 
-def draw_ellipse(t, x_c, y_c, a, b, w, u_n = 0): # TODO u_n=0 is placeholder
+def draw_ellipse( t ,x_c, y_c, a, b, w, u_n = 0): # TODO u_n=0 is placeholder
 
     (x_ref,d_x_ref,dd_x_ref,ddd_x_ref), (y_ref,d_y_ref,dd_y_ref, ddd_y_ref) = reference_ellipse(t, x_c, y_c, a, b, w)
 
@@ -70,4 +71,18 @@ def draw_ellipse(t, x_c, y_c, a, b, w, u_n = 0): # TODO u_n=0 is placeholder
     u_inputs_ellipse = np.array([u_ml, u_mr, u_n])
     return u_inputs_ellipse
 
+q = 0 # TODO move this
+ellipse_sol = solve_ivp(lambda t,s:system(t, s, draw_ellipse(t, i.x_center, i.y_center, a, b, w, u_n = 0),q),(0,time_loop), state0, max_step=0.01)
 
+x_sim = (p.r_m / 2) * (ellipse_sol.y[0] + ellipse_sol.y[1])
+y_sim = (p.r_m / 2) * (ellipse_sol.y[0] - ellipse_sol.y[1])
+
+
+plt.plot(x_sim, y_sim, label='simulated')
+plt.xlabel('x [m]')
+plt.ylabel('y [m]')
+plt.title('Tool head path')
+plt.axis('equal')
+plt.legend()
+plt.show()
+print("run")
