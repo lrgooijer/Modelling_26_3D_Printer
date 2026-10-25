@@ -12,16 +12,6 @@ q_21 = fsm_21.current_state.value # Current state of the global FSM 2.1
 
 
 
-state0 = np.zeros(13)
-state0[0]= (i.x0 + i.y0) / p.r_m # theta_l invert the kinematics
-state0[1]= (i.x0 - i.y0) / p.r_m # theta_r invert the kinematics
-state0[2] = (i.dx0 + i.dy0) / p.r_m #dtheta_l
-state0[3] = (i.dx0 - i.dy0) / p.r_m #dtheta_r
-state0[4] = i_x0 + i_yo #i_l
-state0[5] = i_x0 - i_yo #i_r
-state0[6] = p.t_env     # nozzle temprature TODO maybe jsut start it at 220
-
-
 def system(t,x,u,q_21):
     theta_l, theta_r, dtheta_l, dtheta_r, imotor_l, imotor_r, t_nozzle, u_cn, i_nozzle, s, tau, x_s, y_s = x
 

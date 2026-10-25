@@ -25,5 +25,5 @@ class Bounds:
 
 
 class Intial:
-    x0 = Bounds.xmax / 2
-    y0 = Bounds.ymax / 2
+    x_center = Bounds.xmax / 2
+    y_center = Bounds.ymax / 2

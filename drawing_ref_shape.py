@@ -1,6 +1,8 @@
 import numpy as np
+from scipy.integrate import solve_ivp
+
 from main_simulation import system
-from parameters import Parameters as p
+from parameters import Parameters, Intial as p, i
 
 
 Jtot = p.Jmotor +(1/2)*p.m*(p.r_m**2)
@@ -9,6 +11,11 @@ b_min = ((p.r_m**2)/4) * (p.fric_lx - p.fric_ly)
 
 b_x = b_plus +  b_min
 b_y = b_plus -  b_min
+
+a  = 0.2
+b = 0.4
+w= 2 * np.pi
+
 
 def reference_ellipse(t, x_c, y_c, a, b, w):
     
@@ -23,6 +30,24 @@ def reference_ellipse(t, x_c, y_c, a, b, w):
     ddd_y_ref =  -b * w**3 * np.cos(w*t)
 
     return (x_ref,d_x_ref,dd_x_ref,ddd_x_ref), (y_ref,d_y_ref,dd_y_ref, ddd_y_ref)  
+
+def input_i_z(d_z_ref, dd_z_ref, bz):
+    input_i_z = (Jtot * dd_z_ref + bz * d_z_ref) / (p.r_m * p.Km) 
+    return input_i_z
+
+(x0, d_x0, dd_x0, ddd_x0), (y0, d_y0, dd_y0, ddd_y0) = reference_ellipse(0,i.x_center, i.y_center, a, b, w)
+
+i_x0 = input_i_z(d_x0, dd_x0, b_x)
+i_y0  = input_i_z(d_y0, dd_y0, b_y)
+
+state0 = np.zeros(13)
+state0[0]= (x0 + y0) / p.r_m # theta_l invert the kinematics
+state0[1]= (x0 - y0) / p.r_m # theta_r invert the kinematics
+state0[2] = (d_x0 + d_y0) / p.r_m #dtheta_l
+state0[3] = (d_x0 - d_y0) / p.r_m #dtheta_r
+state0[4] = i_x0 + i_y0 #i_l
+state0[5] = i_x0 - i_y0 #i_r
+state0[6] = p.t_env     # nozzle temprature TODO maybe jsut start it at 220
 
 
 def input_u_z(t, d_z_ref, dd_z_ref, ddd_z_ref, b_z):
