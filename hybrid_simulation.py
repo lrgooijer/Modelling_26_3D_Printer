@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.integrate import solve_ivp
 from parameters import Parameters as p, Events as e
-
+import matplotlib.pyplot as plt
 from q21_fsm import Q21FSM
 from q22_fsm import Q22FSM
 from system import system
@@ -9,6 +9,17 @@ from system import system
 
 q_21 =Q21FSM()
 q_22 =Q22FSM()
+
+def u_wiping(t, x):
+    u_y = e.u_wipe * np.sin(e.w_wipe*x[10])
+    u_ml = u_y # only y movement so u_x = 0
+    u_mr = - u_y # only y movement so u_x = 0
+    return np.array([u_ml, u_mr, p.heater_u_nom])
+
+def wipe_complete(t, x):
+    return x[10] - e.dt_wipe
+wipe_complete.terminal = True
+wipe_complete.direction = 1
 
 def u_cooling(t,x):
     return np.array([0,0,0])
@@ -48,17 +59,18 @@ def reset_filament_loaded(x):
 
 
 GUARDS = {
+    3:[(wipe_complete, "wipe_complete", reset_tau)],
     4:[(nozzle_cooled, "nozzle_cooled", reset_tau)],
     5:[(filament_loaded, "filament_loaded", reset_filament_loaded)],
     6:[(nozzle_heated, "nozzle_heated", no_reset)]      
           }
 
-CONTROLLERS = {4: u_cooling, 5:  u_loading, 6: u_heating}
+CONTROLLERS = {3:u_wiping, 4: u_cooling, 5:  u_loading, 6: u_heating}
 
 def simulate_hybrid(x0, fsm, t_end):
     t, x= 0.0, x0
 
-    stints = []
+    actions = []
     while t < t_end:
 
         q = fsm.current_state.value
@@ -72,7 +84,7 @@ def simulate_hybrid(x0, fsm, t_end):
         sol =  solve_ivp(lambda t,x :system(t, x, crtl(t,x),q),
                             (t, t_end), x, method="Radau",
                             events=[g for g, _, _ in guards], max_step = 1)
-        stints.append((sol.t, sol.y, q))
+        actions.append((sol.t, sol.y, q))
 
         for i, te in enumerate(sol.t_events):
             if len(te)>0:
@@ -83,6 +95,35 @@ def simulate_hybrid(x0, fsm, t_end):
         t = sol.t_events[k][0]
         x = reset(sol.y_events[k][0])
         fsm.send(event_name)
-    return stints
+    return actions
 
  
+if __name__=="__main__":
+    fsm = Q21FSM()
+    for event in ["new_filament_req", "stopped", "at_wipe_loc"]:
+        fsm.send(event)
+
+    x0 = np.zeros(13)
+    x0[6] = 220
+    x0[7] = 14
+    x0[8] = 1
+
+    actions = simulate_hybrid(x0, fsm, t_end=2000)
+    fig, (ax_T, ax_wipe, ax_q) = plt.subplots(1,3, figsize=(18,5))
+    for t_act, x_act, q in actions:
+        y_pos = (p.r_m/2)* (x_act[0] - x_act[1])
+        ax_wipe.plot(t_act, y_pos)
+        ax_T.plot(t_act, x_act[6])
+        ax_q.step(t_act, np.full_like(t_act, q), where="post")
+    ax_T.axhline(e.T_low, ls="--", c="k")
+    ax_T.axhline(e.T_high, ls="--", c="k")
+    ax_T.set_title("Nozzle temprature")
+    ax_T.set_ylabel("T nozzle [°C]")
+    ax_wipe.set_title("Wiping")
+    ax_wipe.set_ylabel("y [m]")
+    ax_wipe.set_xlabel("t [s]")
+    ax_q.set_title("State Tranistions")
+    ax_q.set_ylabel("State")
+    ax_q.set_xlabel("t [s]")
+    plt.show()
+
