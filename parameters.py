@@ -1,6 +1,5 @@
+import numpy as np
 
-   # TODO : Come up with better estimates for these
-    #        as these are placeholders
 # Estimates for parameters of the stepper motor:
 # https://www.datasheetcafe.com/17hs4401s-datasheet/ 
 # https://marlinfw.org/docs/features/filament_change.html 
@@ -27,6 +26,21 @@ class Bounds:
     ymax = 0.30 # Maximum y to bound printer to print plate
 
 
-class Intial:
+class Intial: # TODO kinda wack name
     x_center = Bounds.xmax / 2
     y_center = Bounds.ymax / 2
+
+
+# TODO implement this in the drawing shapes
+class Q14:
+    q = 0 # Printing state
+    time_loop = 200
+    a  = 0.001
+    b = 0.0001
+
+
+class Wipe:
+    x_wipe = 0.0
+    y_wipe = 0.0
+    a_wipe = 0.001
+    b_wipe = 0.0001
