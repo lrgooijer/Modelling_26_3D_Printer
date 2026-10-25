@@ -74,6 +74,8 @@ def draw_ellipse( t ,x_c, y_c, a, b, w, u_n = 0): # TODO u_n=0 is placeholder
 
 t_eval =np.linspace(0,time_loop,1000)
 q = 0 # TODO move this
+
+#TODO add the a second closed figure to the script
 ellipse_sol = solve_ivp(lambda t,s:system(t, s, draw_ellipse(t, i.x_center, i.y_center, a, b, w, u_n = 0),q),
                         (0,time_loop), state0, method="Radau",t_eval=t_eval)
 
