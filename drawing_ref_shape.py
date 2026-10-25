@@ -77,9 +77,12 @@ ellipse_sol = solve_ivp(lambda t,s:system(t, s, draw_ellipse(t, i.x_center, i.y_
 x_sim = (p.r_m / 2) * (ellipse_sol.y[0] + ellipse_sol.y[1])
 y_sim = (p.r_m / 2) * (ellipse_sol.y[0] - ellipse_sol.y[1])
 
+
+(x_ref, *_), (y_ref, *_) = reference_ellipse(ellipse_sol.t, i.x_center, i.y_center, a, b, w)
 if __name__ == "__main__":
 
     fig, ax = plt.subplots()
+    ax.plot(x_ref, y_ref, "k--")
     line, = ax.plot([], [], "r-")
     ax.set_xlabel("x[m]")
     ax.set_ylabel("y[m]")
