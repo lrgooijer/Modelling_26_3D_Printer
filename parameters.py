@@ -49,10 +49,10 @@ class Wipe:
 
 class Events:
     S_max = 1 #[m]
-    t_C  = 30 # Celsius
+    t_C  = 30 # [s]
     dt_wipe = 20 # [s]
     dt_load = 30 # [s]
-    T_low  = 20 #T Celcius
+    T_low  = 150 # Celcius
     T_high = 220 # Celcius
 
 
