@@ -5,7 +5,7 @@ import matplotlib.animation as animation
 from scipy.integrate import solve_ivp
 
 from main_simulation import system
-from parameters import Parameters as p, Intial as i
+from parameters import Parameters as p, Intial as i, Bounds
 
 
 Jtot = p.Jmotor +(1/2)*p.m*(p.r_m**2)
@@ -16,8 +16,8 @@ b_x = b_plus +  b_min
 b_y = b_plus -  b_min
 
 time_loop = 200
-a  = 0.2
-b = 0.4
+a  = 0.06
+b = 0.04
 w= 2 * np.pi / time_loop
 
 
@@ -72,17 +72,29 @@ def draw_ellipse( t ,x_c, y_c, a, b, w, u_n = 0): # TODO u_n=0 is placeholder
     return u_inputs_ellipse
 
 q = 0 # TODO move this
-ellipse_sol = solve_ivp(lambda t,s:system(t, s, draw_ellipse(t, i.x_center, i.y_center, a, b, w, u_n = 0),q),(0,time_loop), state0, max_step=0.01)
+ellipse_sol = solve_ivp(lambda t,s:system(t, s, draw_ellipse(t, i.x_center, i.y_center, a, b, w, u_n = 0),q),(0,time_loop), state0, max_step=1)
 
 x_sim = (p.r_m / 2) * (ellipse_sol.y[0] + ellipse_sol.y[1])
 y_sim = (p.r_m / 2) * (ellipse_sol.y[0] - ellipse_sol.y[1])
 
+(x_ref,*_), (y_ref,*_) = reference_ellipse(ellipse_sol.t, i.x_center, i.y_center, a, b, w)
+if __name__ == "__main__":
 
-plt.plot(x_sim, y_sim, label='simulated')
-plt.xlabel('x [m]')
-plt.ylabel('y [m]')
-plt.title('Tool head path')
-plt.axis('equal')
-plt.legend()
+    fig, ax = plt.subplots()
+    line, = ax.plot([], [], "r-")
+    ax.set_xlabel("x[m]")
+    ax.set_ylabel("y[m]")
+    ax.set_title('Tool head path')
+    ax.axis('equal')
+    ax.set_xlim(0,Bounds.xmax)
+    ax.set_ylim(0, Bounds.ymax)
+
+    step = 5
+    def update(frame):
+        n = frame * step
+        line.set_data([x_sim[:n], y_sim[:n]])
+        return line
+
+frames = len(ellipse_sol.t)
+simulation = animation.FuncAnimation(fig, update,frames=frames, interval=200)   
 plt.show()
-print("run")
