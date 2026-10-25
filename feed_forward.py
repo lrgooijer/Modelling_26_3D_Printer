@@ -22,7 +22,7 @@ def intial_state(x_ref,y_ref):
     state0[3] = (d_x0 - d_y0) / p.r_m #dtheta_r
     state0[4] = i_x0 + i_y0 #i_l
     state0[5] = i_x0 - i_y0 #i_r
-    state0[6] = p.t_env     # nozzle temprature TODO maybe jsut start it at 220
+    state0[6] = 220     # nozzle temprature TODO maybe jsut start it at 220
     return state0
 
 

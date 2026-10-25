@@ -1,8 +1,32 @@
+import numpy as np
+
+from parameters import Heater as h
+
 from q21_fsm import Q21FSM
 from q22_fsm import Q22FSM
 from system import system
  
-# TODO add the function for determining the u input aka implement 1.3 and 1.5
+
+q_21 =Q21FSM()
+q_22 =Q22FSM()
+
+def u_cooling(t,x):
+    return np.array([0,0,0])
+
+def nozzle_cooled(t,x):
+    return x[6] - h.T_low
+
+def u_loading(t, x):
+    return np.array([0,0,0])
+
+def u_heating(t, x):
+    return np.array([0, 0, h.u_max])
+
+
+
+CONTROLLERS = {4: u_cooling, 5:  u_loading, 6: u_heating}
+
+
 
 # def fsm_input_selector(t,x,q):
 #     u_x = 0

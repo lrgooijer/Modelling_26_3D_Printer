@@ -39,8 +39,21 @@ class Q14:
     b = 0.0001
 
 
+class Heater:
+    u_max = 40 #TODO
+    T_low  = 30 #TODO polacholdes
+    T_high =300 # TODO
+
 class Wipe:
     x_wipe = 0.0
     y_wipe = 0.0
     a_wipe = 0.001
     b_wipe = 0.0001
+
+class Events:
+    S_max = 1 #[m]
+    t_C  = 30 # Celsius
+    dt_wipe = 20 # [s]
+    dt_load = 30 # [s]
+
+
