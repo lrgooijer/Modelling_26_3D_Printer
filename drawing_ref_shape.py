@@ -1,8 +1,11 @@
 import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+
 from scipy.integrate import solve_ivp
 
 from main_simulation import system
-from parameters import Parameters, Intial as p, i
+from parameters import Parameters as p, Intial as i
 
 
 Jtot = p.Jmotor +(1/2)*p.m*(p.r_m**2)
@@ -67,3 +70,5 @@ def draw_ellipse(t, x_c, y_c, a, b, w, u_n = 0): # TODO u_n=0 is placeholder
 
     u_inputs_ellipse = np.array([u_ml, u_mr, u_n])
     return u_inputs_ellipse
+
+
