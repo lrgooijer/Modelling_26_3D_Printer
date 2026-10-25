@@ -77,26 +77,46 @@ ellipse_sol = solve_ivp(lambda t,s:system(t, s, draw_ellipse(t, i.x_center, i.y_
 x_sim = (p.r_m / 2) * (ellipse_sol.y[0] + ellipse_sol.y[1])
 y_sim = (p.r_m / 2) * (ellipse_sol.y[0] - ellipse_sol.y[1])
 
+u_inputs = np.array([draw_ellipse(t,i.x_center,i.y_center,a,b,w) for t in ellipse_sol.t])
+u_ml_sim, u_mr_sim  = u_inputs[:,0], u_inputs[:,1]
+
+u_max =np.abs(u_inputs[:,:2]).max()
+t_sim = ellipse_sol.t
 
 (x_ref, *_), (y_ref, *_) = reference_ellipse(ellipse_sol.t, i.x_center, i.y_center, a, b, w)
+
+
 if __name__ == "__main__":
 
-    fig, ax = plt.subplots()
-    ax.plot(x_ref, y_ref, "k--")
-    line, = ax.plot([], [], "r-")
-    ax.set_xlabel("x[m]")
-    ax.set_ylabel("y[m]")
-    ax.set_title('Tool head path')
-    ax.axis('equal')
-    ax.set_xlim(0,Bounds.xmax)
-    ax.set_ylim(0, Bounds.ymax)
+    fig, (ax_path, ax_u) = plt.subplots(1,2, figsize=(12,5))
+    ax_path.plot(x_ref, y_ref, "k--")
+    line_path, = ax_path.plot([], [], "r-")
+    ax_path.set_xlabel("x[m]")
+    ax_path.set_ylabel("y[m]")
+    ax_path.set_title('Tool head path')
+    ax_path.axis('equal')
+    ax_path.set_xlim(0,Bounds.xmax)
+    ax_path.set_ylim(0, Bounds.ymax)
+
+
+    line_ml, = ax_u.plot([],[], label="u_ml")
+    line_mr, = ax_u.plot([],[], label="u_mr")
+    ax_u.set_xlabel("t[s]")
+    ax_u.set_ylabel("Voltage[V]")
+    ax_u.set_ylim(-1.2*u_max, 1.2*u_max)
+    ax_u.set_xlim(t_sim[0], t_sim[-1])
+    ax_u.set_title("Motor Voltages")
+    ax_u.legend(loc="upper right")
 
     step = 5
     def update(frame):
         n = frame * step
-        line.set_data([x_sim[:n], y_sim[:n]])
-        return line
+        line_path.set_data([x_sim[:n+1], y_sim[:n+1]])
+        line_ml.set_data(t_sim[:n+1], u_ml_sim[:n+1])
+        line_mr.set_data(t_sim[:n+1], u_mr_sim[:n+1])
+        return line_path, line_ml, line_mr
 
-frames = len(ellipse_sol.t)
-simulation = animation.FuncAnimation(fig, update,frames=frames, interval=200)   
-plt.show()
+    frames = len(ellipse_sol.t) // step
+    simulation = animation.FuncAnimation(fig, update,frames=frames, interval=200, blit=True)   
+    plt.show()
+
