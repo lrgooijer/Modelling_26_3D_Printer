@@ -1,16 +1,11 @@
 import numpy as np
 from scipy.integrate import solve_ivp
 from parameters import Parameters as p, Events as e, Q14 as f, Intial as i, Bounds as b
-from feed_forward import draw_ellipse
+from feed_forward import draw_ellipse, reference_ellipse, intial_state
 import matplotlib.pyplot as plt
 from q21_fsm import Q21FSM
 from q22_fsm import Q22FSM
 from system import system
-
- 
-
-q_21 =Q21FSM()
-q_22 =Q22FSM()
 
 def u_printing(t,x):
     w  = 2 * np.pi / f.time_loop # TODO placeholder needs to be square
@@ -258,26 +253,21 @@ if __name__=="__main__":
     # for event in ["new_filament_req", "stopped"]:
     #     fsm.send(event)
 
-    x_start = 0.15
-    y_start = 0.15
-    #TODO move this 
-    x0 = np.zeros(13)
-    x0[0] = (x_start + y_start) / p.r_m  
-    x0[1] = (x_start - y_start) / p.r_m
-    x0[6] = 220
+    w = 2*np.pi / f.time_loop
+    x_ref, y_ref = reference_ellipse(0, i.x_center, i.y_center, f.a, f.b, w)
+    x0 = intial_state(x_ref, y_ref)
     x0[7] = 14
     x0[8] = 1
-    x0[11] = x_start
-    x0[12] = y_start
+
 
     actions = simulate_hybrid(x0, fsm, t_end=2000)
     fig, ((ax_T, ax_wipe), (ax_q, ax_pos)) = plt.subplots(2,2, figsize=(14,10))
     for t_act, x_act, q in actions:
-        x_pos = (p.r_m/2)* (x_act[0] + x_act[1])
-        y_pos = (p.r_m/2)* (x_act[0] - x_act[1])
-        ax_wipe.plot(t_act, y_pos)
+        x_pos_plot = (p.r_m/2)* (x_act[0] + x_act[1])
+        y_pos_plot = (p.r_m/2)* (x_act[0] - x_act[1])
+        ax_wipe.plot(t_act, y_pos_plot)
         ax_T.plot(t_act, x_act[6])
-        ax_pos.plot(x_pos,y_pos)
+        ax_pos.plot(x_pos_plot,y_pos_plot)
         ax_q.step(t_act, np.full_like(t_act, q), where="post")
     ax_T.axhline(e.T_low, ls="--", c="k")
     # ax_T.axhline(e.T_high, ls="--", c="k")
