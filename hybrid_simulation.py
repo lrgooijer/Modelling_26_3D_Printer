@@ -41,6 +41,25 @@ def stopped(t,x):
 stopped.terminal = True
 stopped.direction = -1
 
+def u_corner_H(t,x):
+    u_x = -e.u_corner
+    return np.array([u_x, u_x, p.heater_u_nom])
+
+def u_corner_H(t,x):
+    u_y = -e.u_corner
+    return np.array([u_y, -u_y, p.heater_u_nom])
+
+def x_bound_reached(t,x):
+    x = (p.r_m/2)*(x[0] + x[1])
+    return x
+x_bound_reached.terminal = True
+x_bound_reached.direction = -1
+
+def y_bound_reached(t,x):
+    y = (p.r_m/2)*(x[0] - x[1])
+    return y
+y_bound_reached.terminal = True
+y_bound_reached.direction = -1
 
 def u_wiping(t, x):
     u_y = e.u_wipe * np.sin(e.w_wipe*x[10])

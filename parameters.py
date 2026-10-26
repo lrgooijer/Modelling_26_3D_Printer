@@ -52,5 +52,6 @@ class Events:
     T_low  = 150 # Celcius
     T_high = 220 # Celcius
     cap_dtheta = 0.01 # Threshold stopping TODO placeholder
+    u_corner = 1 #TODO placeholder
 
 
