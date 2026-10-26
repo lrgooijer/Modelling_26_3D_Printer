@@ -22,7 +22,7 @@ def intial_state(x_ref,y_ref):
     state0[3] = (d_x0 - d_y0) / p.r_m #dtheta_r
     state0[4] = i_x0 + i_y0 #i_l
     state0[5] = i_x0 - i_y0 #i_r
-    state0[6] = p.t_env     # nozzle temprature TODO maybe jsut start it at 220
+    state0[6] = 220     # nozzle temprature TODO import form parameters
     return state0
 
 
@@ -48,7 +48,7 @@ def input_u_z(t, d_z_ref, dd_z_ref, ddd_z_ref, b_z):
     input_u_z = (p.Lm * Jtot/ (p.r_m* p.Km)) *ddd_z_ref +((p.Lm * b_z + p.R_motor * Jtot)/(p.r_m*p.Km))*dd_z_ref + (p.R_motor * b_z / (p.r_m * p.Km) + p.Km / p.r_m) * d_z_ref
     return input_u_z
 
-def draw_ellipse( t ,x_c, y_c, a, b, w, u_n = 0): # TODO u_n=0 is placeholder
+def draw_ellipse( t ,x_c, y_c, a, b, w, u_n = p.heater_u_nom): # TODO u_n=0 is placeholder
 
     (x_ref,d_x_ref,dd_x_ref,ddd_x_ref), (y_ref,d_y_ref,dd_y_ref, ddd_y_ref) = reference_ellipse(t, x_c, y_c, a, b, w)
 

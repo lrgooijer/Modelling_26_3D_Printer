@@ -20,6 +20,8 @@ class Parameters:
     R_n = 14 # Nozzle resistance [ohm]
     t_env = 20 # Celcius
     L_n = 4 # Nozzle inductance [H]
+    heater_u_max = 24 # Maximum volatge heater [V]
+    heater_u_nom = 13.66 # Steady state voltage heate [V] #TODO add calculation to report
 
 class Bounds:
     xmax = 0.30 # Maximum x to bound printer to print plate
@@ -35,12 +37,25 @@ class Intial: # TODO kinda wack name
 class Q14:
     q = 0 # Printing state
     time_loop = 200
-    a  = 0.001
-    b = 0.0001
+    a  = 0.03
+    b = 0.06
 
 
-class Wipe:
-    x_wipe = 0.0
-    y_wipe = 0.0
-    a_wipe = 0.001
-    b_wipe = 0.0001
+class Events:
+    S_max = 1 #[m]
+    t_C  = 1000 # TODO test with lower value Time for this colour
+    w_wipe = 2*np.pi /2 # Wipe Frequency
+    u_wipe = 1 # TODO placeholder Determines magnitude of the y-wipe
+    Kd_brake = 0.02 # TODO placeholder determine better one
+    dt_wipe = 20 # [s]
+    dt_load = 30 # [s]
+    T_low  = 150 # Celcius
+    T_high = 220 # Celcius
+    cap_dtheta = 0.01 # Threshold stopping TODO placeholder
+    u_corner = 1 #TODO placeholder
+    threshold_bound = 0.01
+    threshold_saved_loc = 1e-3
+    Kp_pos  = 1# TODO placeholder
+    Kd_pos  = 1# TODO placeholder
+
+
