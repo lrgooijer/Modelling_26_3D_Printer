@@ -165,8 +165,8 @@ GUARDS = {
                     (y_bound_reached, "V0", no_reset)],
     (2,"q1State"): [(y_bound_reached, "V0", no_reset),
                     (x_bound_left, "H1", no_reset)],
-    (2,"q2State"): [x_bound_reached, "H0", no_reset,
-                    y_bound_left, "V1", no_reset],
+    (2,"q2State"): [(x_bound_reached, "H0", no_reset),
+                    (y_bound_left, "V1", no_reset)],
     1:[(stopped,"stopped", no_reset)],
     3:[(wipe_complete, "wipe_complete", reset_tau)],
     4:[(nozzle_cooled, "nozzle_cooled", reset_tau)],
@@ -184,10 +184,17 @@ CONTROLLERS = {0:u_printing, 1:u_braking,
                7: u_move_to_saved_loc
                }
 
+def time_shift(t,x,shift):
+    return u_printing(t-shift, x) 
+
+
 def simulate_hybrid(x0, fsm, t_end):
     q22 = Q22FSM()
 
     t, x= 0.0, x0
+
+    t_shift = 0.0
+    t_stop = 0.0
 
     actions = []
     while t < t_end:
@@ -204,6 +211,9 @@ def simulate_hybrid(x0, fsm, t_end):
             break
 
         crtl = CONTROLLERS[key]
+        if key == 0:
+            crtl = lambda t, x: time_shift(t, x, t_shift)
+
         guards = GUARDS[key]
 
         sol =  solve_ivp(lambda t,x :system(t, x, crtl(t,x),q),
@@ -223,6 +233,13 @@ def simulate_hybrid(x0, fsm, t_end):
 
         t = sol.t_events[k][0]
         x = reset(sol.y_events[k][0])
+
+        
+        if event_name in ("new_filament_req", "new_colour_req"):
+            t_stop = t
+
+        if event_name == "at_saved_loc":
+            t_shift += t - t_stop
 
         if event_name in ("V0", "H0", "H1", "V1"):
             q22.send(event_name)
@@ -273,7 +290,8 @@ if __name__=="__main__":
     ax_pos.set_xlabel("x [m]")
     ax_pos.set_xlim(-0.02,b.xmax+0.02)
     ax_pos.set_ylim(-0.02,b.ymax+0.02)
-    ax_wipe.set_title("Position")
+    ax_pos.set_title("Position")
+    ax_wipe.set_title("Y-Coordinate")
     ax_q.set_title("State Tranistions")
     ax_q.set_ylabel("State")
     ax_q.set_xlabel("t [s]")
