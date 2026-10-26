@@ -1,11 +1,16 @@
 import numpy as np
 from scipy.integrate import solve_ivp
-from parameters import Parameters as p, Events as e, Q14 as f, Intial as i, Bounds as b, Clover as c
-from feed_forward import draw_ellipse, reference_ellipse, intial_state, draw_clover, reference_clover
+from parameters import (Parameters as p, Events as e, Q14 as f,
+                        Intial as i, Bounds as b, Clover as c,Square as sq)
+from feed_forward import (draw_ellipse, reference_ellipse, 
+                          intial_state, draw_clover, reference_clover)
 import matplotlib.pyplot as plt
 from q21_fsm import Q21FSM
 from q22_fsm import Q22FSM
+from q32_fsm import Q32_SQUARE_FSM
 from system import system
+
+SHAPE = "square" # "clover"
 
 SQUARE_DIR = {"q0State":(+1,+1), "q1State":(+1,-1), 
               "q2State":(-1, -1), "q3State":(-1, +1)}
@@ -200,29 +205,35 @@ def simulate_hybrid(x0, fsm, t_end):
     q22 = Q22FSM()
 
     t, x= 0.0, x0
-
     t_shift = 0.0
     t_stop = 0.0
 
+    q32 = Q32_SQUARE_FSM()
+    theta_ref = None
+    dtheta = sq.side_length/p.r_m # dtheta based on L_square
+
     actions = []
     while t < t_end:
-
         q = fsm.current_state.value
-
-        if q ==2:
+        if q == 2:
             key = (2,q22.current_state.id)
         else:
             key = q
-            
         if key not in CONTROLLERS:
-            print(f"state not in controlles")
+            print(f"state not in controllers")
             break
-
+        
         crtl = CONTROLLERS[key]
+        guards = GUARDS[key]
+
         if key == 0:
+            if SHAPE == "square":
+                corner = q32.current_state.id
+                crtl = u_drawing_square(t,x, theta_ref)
+                guards = GUARDS[0]
+        else:
             crtl = lambda t, x: time_shift(t, x, t_shift)
 
-        guards = GUARDS[key]
 
         sol =  solve_ivp(lambda t,x :system(t, x, crtl(t,x),q),
                             (t, t_end), x, method="Radau",

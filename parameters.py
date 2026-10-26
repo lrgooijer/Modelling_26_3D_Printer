@@ -46,6 +46,9 @@ class Clover:
     a  = 0.1
     b = 0.3
 
+class Square:
+    side_length = 0.12
+
 class Events:
     S_max = 1 #[m]
     t_C  = 1000 # TODO test with lower value Time for this colour
