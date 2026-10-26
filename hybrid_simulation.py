@@ -24,8 +24,19 @@ def u_drawing_square(t, x, theta_ref):
     u_mr = e.Kp_pos* e_theta_r - e.Kd_pos*x[3]
     return np.array([u_ml, u_mr, p.heater_u_nom])
 
+def square_corner_reached(t,x,theta_ref):
+    offset_theta_l = abs(x[0]-theta_ref[0])
+    offset_theta_r = abs(x[1]-theta_ref[1])
+    vel_motors = np.sqrt(x[2]**2 + x[3]**2)
+    return max(offset_theta_l -e.threshold_bound_theta,
+               offset_theta_r - e.threshold_bound_theta,
+               vel_motors- e.threshold_bound_omega)
+
+square_corner_reached.terminal =True
+square_corner_reached.direction = -1
+
 def u_printing(t,x):
-    w  = 2 * np.pi / f.time_loop # TODO placeholder needs to be square
+    w  = 2 * np.pi / f.time_loop
     #return draw_ellipse (t, i.x_center,i.y_center, f.a, f.b, w)
     return draw_clover(t, i.x_center,i.y_center, c.a,c.b, w)
 
@@ -228,12 +239,14 @@ def simulate_hybrid(x0, fsm, t_end):
 
         if key == 0:
             if SHAPE == "square":
-                corner = q32.current_state.id
-                crtl = u_drawing_square(t,x, theta_ref)
+                square_corner = q32.current_state.id
+                if theta_ref is None:
+                    in_l, in_r = SQUARE_DIR[square_corner]
+                    theta_ref = (x[0] +in_l*dtheta, x[1] + in_r*dtheta)
+                crtl = lambda t, x, theta_ref :u_drawing_square(t,x, theta_ref)
                 guards = GUARDS[0]
         else:
             crtl = lambda t, x: time_shift(t, x, t_shift)
-
 
         sol =  solve_ivp(lambda t,x :system(t, x, crtl(t,x),q),
                             (t, t_end), x, method="Radau",
@@ -260,7 +273,11 @@ def simulate_hybrid(x0, fsm, t_end):
         if event_name == "at_saved_loc":
             t_shift += t - t_stop
 
-        if event_name in ("V0", "H0", "H1", "V1"):
+        if event_name == "corner":
+            q32.send(square_corner)
+            theta_ref = None # Reset the theta_ref
+
+        elif event_name in ("V0", "H0", "H1", "V1"):
             q22.send(event_name)
             if q22.current_state.id == "q3State":
                 fsm.send("at_wipe_loc")

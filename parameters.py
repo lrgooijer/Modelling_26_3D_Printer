@@ -65,5 +65,7 @@ class Events:
     threshold_saved_loc = 1e-3
     Kp_pos  = 1# TODO placeholder
     Kd_pos  = 1# TODO placeholder
+    threshold_bound_theta = 0.01 #TODO
+    threshold_bound_omega = 0.01 #TODO
 
 
