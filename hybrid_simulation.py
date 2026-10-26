@@ -117,6 +117,9 @@ def nozzle_heated(t,x):
 nozzle_heated.terminal = True
 nozzle_heated.direction = 1
 
+# def u_move_to_saved(t,x):
+    
+
 def reset_save_position(x):
     x = x.copy()
     x[11]= (p.r_m/2)*(x[0]+x[1]) # x_s
@@ -211,15 +214,17 @@ if __name__=="__main__":
     # for event in ["new_filament_req", "stopped"]:
     #     fsm.send(event)
 
-    x_start = 0.10
-    y_start = 0.20
-
+    x_start = 0.15
+    y_start = 0.15
+    #TODO move this 
     x0 = np.zeros(13)
     x0[0] = (x_start + y_start) / p.r_m  
     x0[1] = (x_start - y_start) / p.r_m
     x0[6] = 220
     x0[7] = 14
     x0[8] = 1
+    x0[11] = x_start
+    x0[12] = y_start
 
     actions = simulate_hybrid(x0, fsm, t_end=2000)
     fig, ((ax_T, ax_wipe), (ax_q, ax_pos)) = plt.subplots(2,2, figsize=(14,10))
@@ -239,8 +244,8 @@ if __name__=="__main__":
     ax_wipe.set_xlabel("t [s]")
     ax_pos.set_ylabel("y [m]")
     ax_pos.set_xlabel("x [m]")
-    ax_pos.set_xlim(-0.1,b.xmax+0.1)
-    ax_pos.set_ylim(-0.1,b.ymax+0.1)
+    ax_pos.set_xlim(-0.02,b.xmax+0.02)
+    ax_pos.set_ylim(-0.02,b.ymax+0.02)
     ax_wipe.set_title("Position")
     ax_q.set_title("State Tranistions")
     ax_q.set_ylabel("State")
