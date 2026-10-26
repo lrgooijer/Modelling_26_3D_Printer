@@ -40,6 +40,11 @@ class Q14:
     a  = 0.03
     b = 0.06
 
+class Clover:
+    q = 0 # Printing state
+    time_loop = 200
+    a  = 0.1
+    b = 0.3
 
 class Events:
     S_max = 1 #[m]
