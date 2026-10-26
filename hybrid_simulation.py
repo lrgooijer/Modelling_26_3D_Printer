@@ -45,21 +45,42 @@ def u_corner_H(t,x):
     u_x = -e.u_corner
     return np.array([u_x, u_x, p.heater_u_nom])
 
-def u_corner_H(t,x):
+def u_corner_V(t,x):
     u_y = -e.u_corner
     return np.array([u_y, -u_y, p.heater_u_nom])
 
-def x_bound_reached(t,x):
-    x = (p.r_m/2)*(x[0] + x[1])
-    return x
+def u_corner_both(t,x):
+    u_x = -e.u_corner
+    u_y = -e.u_corner
+    u_ml = u_x + u_y
+    u_mr = u_x - u_y
+    return np.array([u_ml, u_mr, p.heater_u_nom])
+
+def x_pos(x):
+    return (p.r_m/2)*(x[0] + x[1])
+def y_pos(x):
+    return (p.r_m/2)*(x[0] - x[1])
+
+def x_bound_left(t,x):# H,+
+    return x_pos(x) - e.threshold_bound
+x_bound_left.terminal = True
+x_bound_left.direction = 1
+
+def y_bound_left(t,x): # V,+
+    return y_pos(x) - e.threshold_bound
+y_bound_left.terminal = True
+y_bound_left.direction =1
+
+def x_bound_reached(t,x): # H,0
+    return x_pos(x)
 x_bound_reached.terminal = True
 x_bound_reached.direction = -1
 
-def y_bound_reached(t,x):
-    y = (p.r_m/2)*(x[0] - x[1])
-    return y
+def y_bound_reached(t,x): # V,0
+    return y_pos(x)
 y_bound_reached.terminal = True
 y_bound_reached.direction = -1
+
 
 def u_wiping(t, x):
     u_y = e.u_wipe * np.sin(e.w_wipe*x[10])
@@ -117,6 +138,12 @@ def reset_filament_loaded(x):
 GUARDS = {
     0:[(filament_finished, "new_filament_req", reset_save_position),
        (colour_change, "new_colour_req", reset_save_position)], # TODO add colour change, resest not correct
+    (2,"q0State"): [(x_bound_reached, "H0", no_reset),
+                    (y_bound_reached, "V0", no_reset)],
+    (2,"q1State"): [(y_bound_reached, "V0", no_reset),
+                    (x_bound_left, "H1", no_reset)],
+    (2,"q2State"): [x_bound_reached, "H0", no_reset,
+                    y_bound_left, "V1", no_reset],
     1:[(stopped,"stopped", no_reset)],
     3:[(wipe_complete, "wipe_complete", reset_tau)],
     4:[(nozzle_cooled, "nozzle_cooled", reset_tau)],
@@ -124,21 +151,34 @@ GUARDS = {
     6:[(nozzle_heated, "nozzle_heated", no_reset)]      
           }
 
-CONTROLLERS = {0:u_printing, 1:u_braking, 3:u_wiping, 4: u_cooling, 5:  u_loading, 6: u_heating}
+CONTROLLERS = {0:u_printing, 1:u_braking,
+               (2,"q0State"): u_corner_both,
+               (2,"q1State"): u_corner_V,
+               (2,"q2State"): u_corner_H,
+               3:u_wiping, 4: u_cooling, 
+               5:  u_loading, 6: u_heating}
 
 def simulate_hybrid(x0, fsm, t_end):
+    q22 = Q22FSM()
+
     t, x= 0.0, x0
 
     actions = []
     while t < t_end:
 
         q = fsm.current_state.value
-        if q not in CONTROLLERS:
+
+        if q ==2:
+            key = (2,q22.current_state.id)
+        else:
+            key = q
+            
+        if key not in CONTROLLERS:
             print(f"state not in controlles")
             break
 
-        crtl = CONTROLLERS[q]
-        guards = GUARDS[q]
+        crtl = CONTROLLERS[key]
+        guards = GUARDS[key]
 
         sol =  solve_ivp(lambda t,x :system(t, x, crtl(t,x),q),
                             (t, t_end), x, method="Radau",
@@ -153,14 +193,23 @@ def simulate_hybrid(x0, fsm, t_end):
 
         t = sol.t_events[k][0]
         x = reset(sol.y_events[k][0])
-        fsm.send(event_name)
+
+        if event_name in ("V0", "H0", "H1", "V1"):
+            q22.send(event_name)
+            if q22.current_state.id == "q3State":
+                fsm.send("at_wipe_loc")
+        else:
+            fsm.send(event_name)
+            if fsm.current_state.value == 2:
+                q22 = Q22FSM() # Reset the corner finding
+
     return actions
 
  
 if __name__=="__main__":
     fsm = Q21FSM()
-    for event in ["new_filament_req", "stopped", "at_wipe_loc"]:
-        fsm.send(event)
+    # for event in ["new_filament_req", "stopped", "at_wipe_loc"]:
+    #     fsm.send(event)
 
     x0 = np.zeros(13)
     x0[6] = 220
