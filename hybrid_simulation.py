@@ -7,6 +7,18 @@ from q21_fsm import Q21FSM
 from q22_fsm import Q22FSM
 from system import system
 
+SQUARE_DIR = {"q0State":(+1,+1), "q1State":(+1,-1), 
+              "q2State":(-1, -1), "q3State":(-1, +1)}
+
+
+def u_drawing_square(t, x, theta_ref):
+    e_theta_l = theta_ref[0] - x[0]
+    e_theta_r = theta_ref[1] - x[1]
+
+    u_ml = e.Kp_pos*e_theta_l  - e.Kd_pos*x[2]
+    u_mr = e.Kp_pos* e_theta_r - e.Kd_pos*x[3]
+    return np.array([u_ml, u_mr, p.heater_u_nom])
+
 def u_printing(t,x):
     w  = 2 * np.pi / f.time_loop # TODO placeholder needs to be square
     #return draw_ellipse (t, i.x_center,i.y_center, f.a, f.b, w)
