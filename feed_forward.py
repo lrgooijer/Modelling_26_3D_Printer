@@ -42,16 +42,16 @@ def reference_clover(t, x_c, y_c, a, b, w):
 
 
 
-def reference_ellipse(t, x_c, y_c, a, b, w): 
-    x_ref = x_c + a * np.cos(w*t)
-    d_x_ref = -a * w * np.sin(w*t) 
-    dd_x_ref =  -a * w**2 * np.cos(w*t) 
-    ddd_x_ref =  a * w**3 * np.sin(w*t)
+def reference_ellipse(t, x_c, y_c, a, b, c_w): 
+    x_ref = x_c + a * np.cos(c_w*t)
+    d_x_ref = -a * c_w * np.sin(c_w*t) 
+    dd_x_ref =  -a * c_w**2 * np.cos(c_w*t) 
+    ddd_x_ref =  a * c_w**3 * np.sin(c_w*t)
 
-    y_ref = y_c + b * np.sin(w*t)
-    d_y_ref = b * w * np.cos(w*t) 
-    dd_y_ref =  -b * w**2 * np.sin(w*t) 
-    ddd_y_ref =  -b * w**3 * np.cos(w*t)
+    y_ref = y_c + b * np.sin(c_w*t)
+    d_y_ref = b * c_w * np.cos(c_w*t) 
+    dd_y_ref =  -b * c_w**2 * np.sin(c_w*t) 
+    ddd_y_ref =  -b * c_w**3 * np.cos(c_w*t)
 
     return (x_ref,d_x_ref,dd_x_ref,ddd_x_ref), (y_ref,d_y_ref,dd_y_ref, ddd_y_ref)  
 
@@ -76,8 +76,8 @@ def draw_ellipse( t ,x_c, y_c, a, b, w, u_n = p.heater_u_nom):
     u_inputs_ellipse = np.array([u_ml, u_mr, u_n])
     return u_inputs_ellipse
 
-def draw_clover( t ,x_c, y_c, a, b, w, u_n = p.heater_u_nom):
-    (x_ref,d_x_ref,dd_x_ref,ddd_x_ref), (y_ref,d_y_ref,dd_y_ref, ddd_y_ref) = reference_clover(t, x_c, y_c, a, b, w)
+def draw_clover( t ,x_c, y_c, a, b, c_w, u_n = p.heater_u_nom):
+    (x_ref,d_x_ref,dd_x_ref,ddd_x_ref), (y_ref,d_y_ref,dd_y_ref, ddd_y_ref) = reference_clover(t, x_c, y_c, a, b, c_w)
     
     u_x = input_u_z(t, d_x_ref,dd_x_ref,ddd_x_ref, b_x)
     u_y = input_u_z(t, d_y_ref,dd_y_ref, ddd_y_ref, b_y)

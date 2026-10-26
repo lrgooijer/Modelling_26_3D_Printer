@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.integrate import solve_ivp
-from parameters import Parameters as p, Events as e, Q14 as f, Intial as i, Bounds as b
-from feed_forward import draw_ellipse, reference_ellipse, intial_state
+from parameters import Parameters as p, Events as e, Q14 as f, Intial as i, Bounds as b, Clover as c
+from feed_forward import draw_ellipse, reference_ellipse, intial_state, draw_clover, reference_clover
 import matplotlib.pyplot as plt
 from q21_fsm import Q21FSM
 from q22_fsm import Q22FSM
@@ -9,7 +9,8 @@ from system import system
 
 def u_printing(t,x):
     w  = 2 * np.pi / f.time_loop # TODO placeholder needs to be square
-    return draw_ellipse(t, i.x_center,i.y_center, f.a, f.b, w)
+    #return draw_ellipse (t, i.x_center,i.y_center, f.a, f.b, w)
+    return draw_clover(t, i.x_center,i.y_center, c.a,c.b, w)
 
 def filament_finished(t,x):
     return x[9] - e.S_max
@@ -254,13 +255,14 @@ if __name__=="__main__":
     #     fsm.send(event)
 
     w = 2*np.pi / f.time_loop
-    x_ref, y_ref = reference_ellipse(0, i.x_center, i.y_center, f.a, f.b, w)
+    #x_ref, y_ref = reference_ellipse(0, i.x_center, i.y_center, f.a, f.b, w)
+    x_ref, y_ref = reference_clover(0, i.x_center, i.y_center, c.a, c.b, w)    
     x0 = intial_state(x_ref, y_ref)
     x0[7] = 14
     x0[8] = 1
 
 
-    actions = simulate_hybrid(x0, fsm, t_end=2000)
+    actions = simulate_hybrid(x0, fsm, t_end=1500)
     fig, ((ax_T, ax_wipe), (ax_q, ax_pos)) = plt.subplots(2,2, figsize=(14,10))
     for t_act, x_act, q in actions:
         x_pos_plot = (p.r_m/2)* (x_act[0] + x_act[1])
