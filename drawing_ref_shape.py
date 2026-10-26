@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
 from scipy.integrate import solve_ivp
-from feed_forward import draw_ellipse, reference_ellipse, intial_state
+from feed_forward import draw_ellipse, reference_ellipse, intial_state, reference_clover, draw_clover
 from system import system
 from parameters import Parameters as p, Intial as i, Bounds, Q14 as f
 
@@ -15,7 +15,7 @@ def simulate_ellipse(a,b, time_loop, x_c, y_c, n_points):
     state0 = intial_state(x_ref, y_ref)
 
     t_eval =np.linspace(0,time_loop,n_points)
-    q = 0 # TODO move this
+    q = 0
     ellipse_sol = solve_ivp(lambda t,s:system(t, s, draw_ellipse(t, x_c, y_c, a, b, w, u_n = 0),q),
                             (0,time_loop), state0, method="Radau",t_eval=t_eval)
 
@@ -26,6 +26,23 @@ def simulate_ellipse(a,b, time_loop, x_c, y_c, n_points):
 
     return ellipse_sol, x_sim, y_sim, u_inputs, w
 
+def simulate_clover(a,b, time_loop, x_c, y_c, n_points):
+    w = 2 * np.pi / time_loop
+
+    x_ref, y_ref = reference_clover(0, x_c, y_c, a, b, w)
+    state0 = intial_state(x_ref, y_ref)
+
+    t_eval =np.linspace(0,time_loop,n_points)
+    q = 0
+    ellipse_sol = solve_ivp(lambda t,s:system(t, s, draw_clover(t, x_c, y_c, a, b, w, u_n = 0),q),
+                            (0,time_loop), state0, method="Radau",t_eval=t_eval)
+
+    x_sim = (p.r_m / 2) * (ellipse_sol.y[0] + ellipse_sol.y[1])
+    y_sim = (p.r_m / 2) * (ellipse_sol.y[0] - ellipse_sol.y[1])
+
+    u_inputs = np.array([draw_clover(t,x_c ,y_c ,a,b,w) for t in ellipse_sol.t])
+
+    return ellipse_sol, x_sim, y_sim, u_inputs, w
 
 if __name__ == "__main__":
     ellipse_sol, x_sim, y_sim, u_inputs, w = simulate_ellipse(a=f.a, b=f.b,time_loop=f.time_loop,

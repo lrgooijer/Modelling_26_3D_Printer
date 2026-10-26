@@ -25,32 +25,20 @@ def intial_state(x_ref,y_ref):
     state0[6] = 220     # nozzle temprature TODO import form parameters
     return state0
 
-def reference_clover_h(t, x_c, y_c, a, b, w):
-    x_ref = x_c + a * np.sin(w*t)
-    d_x_ref = a * w * np.cos(w*t) 
-    dd_x_ref =  -a * w**2 * np.sin(w*t) 
-    ddd_x_ref =  -a * w**3 * np.cos(w*t)
+def reference_clover(t, x_c, y_c, a, b, w):
+    h = a/2
+    x_ref     = x_c + h*( np.cos(3*w*t)+ np.cos(w*t))
+    d_x_ref   =       h*(-3*w*np.sin(3*w*t)- w*np.sin(w*t))
+    dd_x_ref  =       h*(-9*w**2*np.cos(3*w*t)- w**2*np.cos(w*t))
+    ddd_x_ref =       h*( 27*w**3*np.sin(3*w*t)+ w**3*np.sin(w*t))
 
-    y_ref = y_c + b * np.sin(2*w*t)
-    d_y_ref = b * w *2* np.cos(2*w*t) 
-    dd_y_ref =  -b * w**2 *4* np.sin(2*w*t) 
-    ddd_y_ref =  -b * w**3 *8* np.cos(2*w*t)
+    y_ref     = y_c + h*( np.sin(3*w*t)- np.sin(w*t))
+    d_y_ref   =       h*( 3*w*np.cos(3*w*t)- w*np.cos(w*t))
+    dd_y_ref  =       h*(-9*w**2*np.sin(3*w*t)+ w**2*np.sin(w*t))
+    ddd_y_ref =       h*(-27*w**3*np.cos(3*w*t)+ w**3*np.cos(w*t))
 
     return (x_ref,d_x_ref,dd_x_ref,ddd_x_ref), \
             (y_ref,d_y_ref,dd_y_ref, ddd_y_ref)
-
-def reference_clover_v(t, x_c, y_c, a, b, w):
-    x_ref = x_c + b * np.sin(2*w*t)
-    d_x_ref = b * w * 2 * np.cos(2*w*t) 
-    dd_x_ref =  -b * w**2 * 4 * np.sin(2*w*t) 
-    ddd_x_ref =  -b * w**3 * 8 * np.cos(2*w*t)
-
-    y_ref = y_c + a * np.sin(w*t)
-    d_y_ref = a * w * np.cos(w*t) 
-    dd_y_ref =  -a * w**2 * np.sin(w*t) 
-    ddd_y_ref =  -a * w**3 * np.cos(w*t)
-    return (x_ref,d_x_ref,dd_x_ref,ddd_x_ref), \
-            (y_ref,d_y_ref,dd_y_ref, ddd_y_ref)  
 
 
 
@@ -88,8 +76,8 @@ def draw_ellipse( t ,x_c, y_c, a, b, w, u_n = p.heater_u_nom):
     u_inputs_ellipse = np.array([u_ml, u_mr, u_n])
     return u_inputs_ellipse
 
-def draw_clover_h( t ,x_c, y_c, a, b, w, u_n = p.heater_u_nom):
-    (x_ref,d_x_ref,dd_x_ref,ddd_x_ref), (y_ref,d_y_ref,dd_y_ref, ddd_y_ref) = reference_clover_h(t, x_c, y_c, a, b, w)
+def draw_clover( t ,x_c, y_c, a, b, w, u_n = p.heater_u_nom):
+    (x_ref,d_x_ref,dd_x_ref,ddd_x_ref), (y_ref,d_y_ref,dd_y_ref, ddd_y_ref) = reference_clover(t, x_c, y_c, a, b, w)
     
     u_x = input_u_z(t, d_x_ref,dd_x_ref,ddd_x_ref, b_x)
     u_y = input_u_z(t, d_y_ref,dd_y_ref, ddd_y_ref, b_y)
@@ -100,14 +88,4 @@ def draw_clover_h( t ,x_c, y_c, a, b, w, u_n = p.heater_u_nom):
     u_inputs_clover_h = np.array([u_ml, u_mr, u_n])
     return u_inputs_clover_h
 
-def draw_clover_v( t ,x_c, y_c, a, b, w, u_n = p.heater_u_nom):
-    (x_ref,d_x_ref,dd_x_ref,ddd_x_ref), (y_ref,d_y_ref,dd_y_ref, ddd_y_ref) = reference_clover_v(t, x_c, y_c, a, b, w)
-    u_x = input_u_z(t, d_x_ref,dd_x_ref,ddd_x_ref, b_x)
-    u_y = input_u_z(t, d_y_ref,dd_y_ref, ddd_y_ref, b_y)
-
-    u_ml = u_x + u_y
-    u_mr = u_x - u_y
-
-    u_inputs_clover_v = np.array([u_ml, u_mr, u_n])
-    return u_inputs_clover_v
 
