@@ -119,21 +119,21 @@ nozzle_heated.direction = 1
 
 def u_move_to_saved_loc(t, x): 
     # PD Control
-    e_x = x[11] - x_pos[x] 
-    e_y = x[12] - y_pos[x]
+    e_x = x[11] - x_pos(x)
+    e_y = x[12] - y_pos(x)
     d_x = (p.r_m/2)*(x[2]+x[3])
     d_y = (p.r_m/2)*(x[2]-x[3])
 
-    u_x = e.Kp_po* e_x - e.Kd_pos*d_x
-    u_y = e.Kp_po* e_y - e.Kd_pos*d_y
+    u_x = e.Kp_pos* e_x - e.Kd_pos*d_x
+    u_y = e.Kp_pos* e_y - e.Kd_pos*d_y
 
     u_ml = u_x + u_y
     u_mr = u_x - u_y
     return np.array([u_ml, u_mr, p.heater_u_nom])
 
 def at_saved_loc(t,x):
-    s_to_saved = np.sqrt((x_pos(x)-x[11])**2-(y_pos(x)-x[12])**2)
-    return s_to_saved - e.threshold_bound
+    s_to_saved = np.sqrt((x_pos(x)-x[11])**2 + (y_pos(x)-x[12])**2)
+    return s_to_saved - e.threshold_saved_loc
 at_saved_loc.terminal = True
 at_saved_loc.direction = -1
 
@@ -152,7 +152,9 @@ def reset_tau(x):
     return x
 
 def reset_filament_loaded(x):
-    x =x.copy(); x[9] = 0.0 # Reset filament distance s+ = 0
+    x =x.copy() 
+    x[9] = 0.0 # Reset filament distance s+ = 0
+    x[10] = 0.0 # Reset tau
     return x
 
 #TODO check the reset with the report
@@ -213,6 +215,10 @@ def simulate_hybrid(x0, fsm, t_end):
             if len(te)>0:
                 k = i
                 break
+        if sol.status != 1:
+            print(f"no event in state {key}")
+            break
+
         _, event_name , reset = guards[k]
 
         t = sol.t_events[k][0]
