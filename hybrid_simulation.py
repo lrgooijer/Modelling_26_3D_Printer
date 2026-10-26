@@ -305,8 +305,8 @@ if __name__=="__main__":
     x0 = intial_state(x_ref, y_ref)
     if SHAPE == "square":
         x0 = np.zeros(13) #TODO is this correct, cant find it atm
-        x0[0] = (sq.y_start + sq.x_start)/p.r_m
-        x0[1] = (sq.y_start - sq.x_start)/p.r_m
+        x0[0] = (sq.x_start + sq.y_start)/p.r_m
+        x0[1] = (sq.x_start - sq.y_start)/p.r_m
         x0[6] = 220
     x0[7] = 14
     x0[8] = 1
@@ -314,7 +314,7 @@ if __name__=="__main__":
 
 
     actions = simulate_hybrid(x0, fsm, t_end=1500)
-    fig, ((ax_T, ax_wipe), (ax_q, ax_pos)) = plt.subplots(2,2, figsize=(14,12))
+    fig, ((ax_T, ax_wipe), (ax_q, ax_pos)) = plt.subplots(2,2, figsize=(14,10))
     for t_act, x_act, q in actions:
         x_pos_plot = (p.r_m/2)* (x_act[0] + x_act[1])
         y_pos_plot = (p.r_m/2)* (x_act[0] - x_act[1])
@@ -328,11 +328,12 @@ if __name__=="__main__":
     ax_T.set_ylabel("T nozzle [°C]")
     ax_wipe.set_title("Wiping")
     ax_wipe.set_ylabel("y [m]")
-    ax_wipe.set_xlabel("t [s]")
+    # ax_wipe.set_xlabel("t [s]")
     ax_pos.set_ylabel("y [m]")
     ax_pos.set_xlabel("x [m]")
     ax_pos.set_xlim(-0.02,b.xmax+0.02)
     ax_pos.set_ylim(-0.02,b.ymax+0.02)
+    ax_pos.set_aspect("equal", adjustable="box")
     ax_pos.set_title("Position")
     ax_wipe.set_title("Y-Coordinate")
     ax_q.set_title("State Tranistions")
