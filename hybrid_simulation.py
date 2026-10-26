@@ -117,8 +117,26 @@ def nozzle_heated(t,x):
 nozzle_heated.terminal = True
 nozzle_heated.direction = 1
 
-# def u_move_to_saved(t,x):
-    
+def u_move_to_saved_loc(t, x): 
+    # PD Control
+    e_x = x[11] - x_pos[x] 
+    e_y = x[12] - y_pos[x]
+    d_x = (p.r_m/2)*(x[2]+x[3])
+    d_y = (p.r_m/2)*(x[2]-x[3])
+
+    u_x = e.Kp_po* e_x - e.Kd_pos*d_x
+    u_y = e.Kp_po* e_y - e.Kd_pos*d_y
+
+    u_ml = u_x + u_y
+    u_mr = u_x - u_y
+    return np.array([u_ml, u_mr, p.heater_u_nom])
+
+def at_saved_loc(t,x):
+    s_to_saved = np.sqrt((x_pos(x)-x[11])**2-(y_pos(x)-x[12])**2)
+    return s_to_saved - e.threshold_bound
+at_saved_loc.terminal = True
+at_saved_loc.direction = -1
+
 
 def reset_save_position(x):
     x = x.copy()
@@ -137,7 +155,7 @@ def reset_filament_loaded(x):
     x =x.copy(); x[9] = 0.0 # Reset filament distance s+ = 0
     return x
 
-
+#TODO check the reset with the report
 GUARDS = {
     0:[(filament_finished, "new_filament_req", reset_save_position),
        (colour_change, "new_colour_req", reset_save_position)], # TODO add colour change, resest not correct
@@ -151,7 +169,8 @@ GUARDS = {
     3:[(wipe_complete, "wipe_complete", reset_tau)],
     4:[(nozzle_cooled, "nozzle_cooled", reset_tau)],
     5:[(filament_loaded, "filament_loaded", reset_filament_loaded)],
-    6:[(nozzle_heated, "nozzle_heated", no_reset)]      
+    6:[(nozzle_heated, "nozzle_heated", no_reset)],
+    7:[(at_saved_loc, "at_saved_loc", no_reset)]      
           }
 
 CONTROLLERS = {0:u_printing, 1:u_braking,
@@ -159,7 +178,9 @@ CONTROLLERS = {0:u_printing, 1:u_braking,
                (2,"q1State"): u_corner_V,
                (2,"q2State"): u_corner_H,
                3:u_wiping, 4: u_cooling, 
-               5:  u_loading, 6: u_heating}
+               5:  u_loading, 6: u_heating,
+               7: u_move_to_saved_loc
+               }
 
 def simulate_hybrid(x0, fsm, t_end):
     q22 = Q22FSM()

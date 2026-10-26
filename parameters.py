@@ -54,5 +54,7 @@ class Events:
     cap_dtheta = 0.01 # Threshold stopping TODO placeholder
     u_corner = 1 #TODO placeholder
     threshold_bound = 0.01
+    Kp_pos  = 1# TODO placeholder
+    Kd_pos  = 1# TODO placeholder
 
 
