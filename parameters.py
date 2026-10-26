@@ -42,7 +42,7 @@ class Q14:
 
 
 class Events:
-    S_max = 0.10 #[m]
+    S_max = 1 #[m]
     t_C  = 1000 # TODO test with lower value Time for this colour
     w_wipe = 2*np.pi /2 # Wipe Frequency
     u_wipe = 1 # TODO placeholder Determines magnitude of the y-wipe

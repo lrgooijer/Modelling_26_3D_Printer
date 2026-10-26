@@ -1,6 +1,6 @@
 import numpy as np
 from scipy.integrate import solve_ivp
-from parameters import Parameters as p, Events as e, Q14 as f, Intial as i
+from parameters import Parameters as p, Events as e, Q14 as f, Intial as i, Bounds as b
 from feed_forward import draw_ellipse
 import matplotlib.pyplot as plt
 from q21_fsm import Q21FSM
@@ -208,10 +208,15 @@ def simulate_hybrid(x0, fsm, t_end):
  
 if __name__=="__main__":
     fsm = Q21FSM()
-    # for event in ["new_filament_req", "stopped", "at_wipe_loc"]:
+    # for event in ["new_filament_req", "stopped"]:
     #     fsm.send(event)
 
+    x_start = 0.10
+    y_start = 0.20
+
     x0 = np.zeros(13)
+    x0[0] = (x_start + y_start) / p.r_m  
+    x0[1] = (x_start - y_start) / p.r_m
     x0[6] = 220
     x0[7] = 14
     x0[8] = 1
@@ -234,6 +239,8 @@ if __name__=="__main__":
     ax_wipe.set_xlabel("t [s]")
     ax_pos.set_ylabel("y [m]")
     ax_pos.set_xlabel("x [m]")
+    ax_pos.set_xlim(-0.1,b.xmax+0.1)
+    ax_pos.set_ylim(-0.1,b.ymax+0.1)
     ax_wipe.set_title("Position")
     ax_q.set_title("State Tranistions")
     ax_q.set_ylabel("State")
