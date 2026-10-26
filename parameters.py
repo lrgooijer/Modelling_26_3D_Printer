@@ -48,6 +48,8 @@ class Clover:
 
 class Square:
     side_length = 0.12
+    x_start = 0.09
+    y_start = 0.09
 
 class Events:
     S_max = 1 #[m]

@@ -31,9 +31,12 @@ def square_corner_reached(t,x,theta_ref):
     return max(offset_theta_l -e.threshold_bound_theta,
                offset_theta_r - e.threshold_bound_theta,
                vel_motors- e.threshold_bound_omega)
-
-square_corner_reached.terminal =True
-square_corner_reached.direction = -1
+def make_corner_guard(theta_ref):
+    def corner_guard(t,x):
+        return square_corner_reached(t,x,theta_ref)
+    corner_guard.terminal =True
+    corner_guard.direction = -1
+    return corner_guard
 
 def u_printing(t,x):
     w  = 2 * np.pi / f.time_loop
@@ -240,13 +243,14 @@ def simulate_hybrid(x0, fsm, t_end):
         if key == 0:
             if SHAPE == "square":
                 square_corner = q32.current_state.id
-                if theta_ref is None:
-                    in_l, in_r = SQUARE_DIR[square_corner]
-                    theta_ref = (x[0] +in_l*dtheta, x[1] + in_r*dtheta)
-                crtl = lambda t, x, theta_ref :u_drawing_square(t,x, theta_ref)
-                guards = GUARDS[0]
-        else:
-            crtl = lambda t, x: time_shift(t, x, t_shift)
+                if square_corner != "q4State":
+                    if theta_ref is None:
+                        in_l, in_r = SQUARE_DIR[square_corner]
+                        theta_ref = (x[0] +in_l*dtheta, x[1] + in_r*dtheta)
+                    guards = GUARDS[0] + [(make_corner_guard(theta_ref), "corner", no_reset)]
+                crtl = lambda t, x, ref=theta_ref :u_drawing_square(t,x, ref)
+            else:
+                crtl = lambda t, x: time_shift(t, x, t_shift)
 
         sol =  solve_ivp(lambda t,x :system(t, x, crtl(t,x),q),
                             (t, t_end), x, method="Radau",
@@ -274,8 +278,9 @@ def simulate_hybrid(x0, fsm, t_end):
             t_shift += t - t_stop
 
         if event_name == "corner":
-            q32.send(square_corner)
-            theta_ref = None # Reset the theta_ref
+            q32.send(f"event{int(square_corner[1])+1}")
+            if q32.current_state.id != "q4State":
+                theta_ref = None # Reset the theta_ref
 
         elif event_name in ("V0", "H0", "H1", "V1"):
             q22.send(event_name)
@@ -298,12 +303,18 @@ if __name__=="__main__":
     #x_ref, y_ref = reference_ellipse(0, i.x_center, i.y_center, f.a, f.b, w)
     x_ref, y_ref = reference_clover(0, i.x_center, i.y_center, c.a, c.b, w)    
     x0 = intial_state(x_ref, y_ref)
+    if SHAPE == "square":
+        x0 = np.zeros(13) #TODO is this correct, cant find it atm
+        x0[0] = (sq.y_start + sq.x_start)/p.r_m
+        x0[1] = (sq.y_start - sq.x_start)/p.r_m
+        x0[6] = 220
     x0[7] = 14
     x0[8] = 1
 
 
+
     actions = simulate_hybrid(x0, fsm, t_end=1500)
-    fig, ((ax_T, ax_wipe), (ax_q, ax_pos)) = plt.subplots(2,2, figsize=(14,10))
+    fig, ((ax_T, ax_wipe), (ax_q, ax_pos)) = plt.subplots(2,2, figsize=(14,12))
     for t_act, x_act, q in actions:
         x_pos_plot = (p.r_m/2)* (x_act[0] + x_act[1])
         y_pos_plot = (p.r_m/2)* (x_act[0] - x_act[1])
