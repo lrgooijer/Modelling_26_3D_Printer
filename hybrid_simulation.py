@@ -9,10 +9,15 @@ from q21_fsm import Q21FSM
 from q22_fsm import Q22FSM
 from q32_fsm import Q32_SQUARE_FSM
 from system import system
-
+# In some plots in the report this is set higher (1000,1500) 
+# to show the ability contuing after return q0State.
 T_END = 500
+# Change the shapes here, for changing from ellipse to clover 
+# make sure to also change the calls. We left #TODO in front of the required spots.
+SHAPE = "ellipse" #"square" # "clover" 
 
-SHAPE = "ellipse" "square" # "clover" 
+# If desired, the filament length and colour change time
+# can be changed in parameter.py under Events, we marked it again with #TODO
 
 SQUARE_DIR = {"q0State":(+1,+1), "q1State":(+1,-1), 
               "q2State":(-1, -1), "q3State":(-1, +1)}
@@ -43,6 +48,7 @@ def make_corner_guard(theta_ref):
 
 def u_printing(t,x):
     w  = 2 * np.pi / f.time_loop
+    #TODO Here we can switch clover and ellipse
     return draw_ellipse (t, i.x_center,i.y_center, f.a, f.b, w)
     #return draw_clover(t, i.x_center,i.y_center, c.a,c.b, w)
 
@@ -302,7 +308,7 @@ if __name__=="__main__":
     #     fsm.send(event)
 
     w = 2*np.pi / f.time_loop
-
+    #TODO Here we can switch clover and ellipse
     x_ref, y_ref = reference_ellipse(0, i.x_center, i.y_center, f.a, f.b, w)
     #x_ref, y_ref = reference_clover(0, i.x_center, i.y_center, c.a, c.b, w)    
     x0 = intial_state(x_ref, y_ref)

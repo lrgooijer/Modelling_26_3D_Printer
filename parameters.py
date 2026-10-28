@@ -21,7 +21,7 @@ class Parameters:
     t_env = 20 # Celcius
     L_n = 4 # Nozzle inductance [H]
     heater_u_max = 24 # Maximum volatge heater [V]
-    heater_u_nom = 13.66 # Steady state voltage heate [V] #TODO add calculation to report
+    heater_u_nom = 13.66 # Steady state voltage heater [V]
     t_nozzle_printing = 220 # Nozzle temperature when printing
 
 
@@ -53,8 +53,10 @@ class Square:
     y_start = 0.09
 
 class Events:
+    #TODO Here the Filament length and colour change time can be adjusted.
     S_max = 0.25 # Filament length until new is needed [m]
-    t_C  = 1000 # Test with lower value,time for this colour
+    t_C  = 1000 # Colour change time, colour is based on a timer
+    
     w_wipe = 2*np.pi /2 # Wipe Frequency
     u_wipe = 1 # Determines magnitude of the y-wipe
     Kd_brake = 0.02 # 
