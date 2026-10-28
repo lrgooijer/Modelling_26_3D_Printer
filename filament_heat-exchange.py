@@ -19,7 +19,7 @@ delta_x = 0.01 # m
 k = 0.13
 T_NOZZLE : int = 220 #Celsius
 THRESHOLD_EQUIL = 1e-3 # Threshold for DTdt to call it an equillibrium
-N_STEPS = 1000 # keep this high,since there is a Equillibrium brake
+K_STEPS = 1000 # keep this high,since there is a Equillibrium brake
 
 
 I_MAX = 101 # Maximum number of sections to print/ Length of filament on the spool
@@ -33,7 +33,10 @@ def heat_exchange_per_unit_volume(T:np.ndarray,i:int ,n_printed:int) -> float:
     conduction_coff : float = (k/(norm_pc*delta_x**2))
     air_coff : float = (h_air/norm_pc)
     plate_coff : float = (h_plate/norm_pc)
-    if n_printed == 1 : # Only one printed, no neighbours
+    if n_printed == I_MAX:
+        sur_heat_exc = air_coff * (3/w)*(t_air-T[i])+plate_coff*(1/w)*(t_plate-T[i])
+        con_heat_exc = conduction_coff * ((T[(i+1) % I_MAX] - T[i])+(T[i-1]-T[i]))
+    elif n_printed == 1 : # Only one printed, no neighbours
         sur_heat_exc = air_coff * (3/w+1/delta_x)*(t_air-T[i])+plate_coff*(1/w)*(t_plate-T[i])
         con_heat_exc = 0 # nothing to conduct to
     elif i==0: # First section    
@@ -67,11 +70,11 @@ def simulate_printing()-> list[float]:
     """
     T = np.full(I_MAX, np.nan) 
     n_printed = 0
-    n_steps = N_STEPS
+    k_steps = K_STEPS
     dt : int = 1
-    T_outcomes =np.full((n_steps, I_MAX), np.nan)
+    T_outcomes =np.full((k_steps, I_MAX), np.nan)
 
-    for time_step in range(n_steps):
+    for time_step in range(k_steps):
         if n_printed < I_MAX:
             T[n_printed]= T_NOZZLE
             n_printed += 1
