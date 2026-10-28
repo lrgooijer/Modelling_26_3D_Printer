@@ -93,11 +93,9 @@ def simulate_printing()-> list[float]:
 if __name__ == "__main__":
     distance, time, T_outcomes = simulate_printing()
     fig, ax = plt.subplots()
-    # bar = ax.imshow(T_outcomes[0][np.newaxis, :],cmap='hot', vmin=t_air, vmax=T_NOZZLE, aspect='auto', extent=[0, I_MAX * delta_x, 0, 1])
-    # fig.colorbar(bar, ax=ax, label='Temperature (°C)')
-    # ax.set_xlabel('Distance (m)')
-    # ax.set_yticks([])
     line, = ax.plot([], [], "r-")
+    ax.set_ylabel("Temperature[°C]")
+    ax.set_xlabel("Printed distance[m]")
     ax.set_ylim(0,T_NOZZLE+10)
     ax.set_xlim(0, I_MAX * delta_x)
     ax.grid(True)
