@@ -19,7 +19,7 @@ delta_x = 0.01 # m
 k = 0.13
 T_NOZZLE : int = 220 #Celsius
 THRESHOLD_EQUIL = 1e-3 # Threshold for DTdt to call it an equillibrium
-K_STEPS = 1000 # keep this high,since there is a Equillibrium brake
+Z_STEPS = 1000 # keep this high,since there is a Equillibrium brake
 
 
 I_MAX = 101 # Maximum number of sections to print/ Length of filament on the spool
@@ -70,11 +70,11 @@ def simulate_printing()-> list[float]:
     """
     T = np.full(I_MAX, np.nan) 
     n_printed = 0
-    k_steps = K_STEPS
+    z_steps = Z_STEPS
     dt : int = 1
-    T_outcomes =np.full((k_steps, I_MAX), np.nan)
+    T_outcomes =np.full((z_steps, I_MAX), np.nan)
 
-    for time_step in range(k_steps):
+    for time_step in range(z_steps):
         if n_printed < I_MAX:
             T[n_printed]= T_NOZZLE
             n_printed += 1
