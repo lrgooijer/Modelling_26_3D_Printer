@@ -22,18 +22,19 @@ class Parameters:
     L_n = 4 # Nozzle inductance [H]
     heater_u_max = 24 # Maximum volatge heater [V]
     heater_u_nom = 13.66 # Steady state voltage heate [V] #TODO add calculation to report
+    t_nozzle_printing = 220 # Nozzle temperature when printing
+
 
 class Bounds:
     xmax = 0.30 # Maximum x to bound printer to print plate
     ymax = 0.30 # Maximum y to bound printer to print plate
 
 
-class Intial: # TODO kinda wack name
+class Intial:
     x_center = Bounds.xmax / 2
     y_center = Bounds.ymax / 2
 
 
-# TODO implement this in the drawing shapes
 class Q14:
     q = 0 # Printing state
     time_loop = 200
@@ -46,21 +47,28 @@ class Clover:
     a  = 0.1
     b = 0.3
 
+class Square:
+    side_length = 0.12
+    x_start = 0.09
+    y_start = 0.09
+
 class Events:
-    S_max = 1 #[m]
-    t_C  = 1000 # TODO test with lower value Time for this colour
+    S_max = 0.25 # Filament length until new is needed [m]
+    t_C  = 1000 # Test with lower value,time for this colour
     w_wipe = 2*np.pi /2 # Wipe Frequency
-    u_wipe = 1 # TODO placeholder Determines magnitude of the y-wipe
-    Kd_brake = 0.02 # TODO placeholder determine better one
+    u_wipe = 1 # Determines magnitude of the y-wipe
+    Kd_brake = 0.02 # 
     dt_wipe = 20 # [s]
     dt_load = 30 # [s]
     T_low  = 150 # Celcius
     T_high = 220 # Celcius
-    cap_dtheta = 0.01 # Threshold stopping TODO placeholder
-    u_corner = 1 #TODO placeholder
-    threshold_bound = 0.01
-    threshold_saved_loc = 1e-3
-    Kp_pos  = 1# TODO placeholder
-    Kd_pos  = 1# TODO placeholder
+    cap_dtheta = 0.01 # Threshold stopping
+    u_corner = 1 # Constant voltage to drive head to corner
+    threshold_bound = 0.01 # # Distance from axis to count as having left it [m]
+    threshold_saved_loc = 1e-3  # Arrival tolerance at the location
+    Kp_pos  = 1# Proportional gain to position
+    Kd_pos  = 1# Derivative gain
+    threshold_bound_theta = 0.01 # Condition that the Motors must be almost stopped in the corners
+    threshold_bound_omega = 0.01 # Condition that the Motors must be almost stopped in the corners
 
 

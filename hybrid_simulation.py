@@ -1,16 +1,50 @@
 import numpy as np
 from scipy.integrate import solve_ivp
-from parameters import Parameters as p, Events as e, Q14 as f, Intial as i, Bounds as b, Clover as c
-from feed_forward import draw_ellipse, reference_ellipse, intial_state, draw_clover, reference_clover
+from parameters import (Parameters as p, Events as e, Q14 as f,
+                        Intial as i, Bounds as b, Clover as c,Square as sq)
+from feed_forward import (draw_ellipse, reference_ellipse, 
+                          intial_state, draw_clover, reference_clover)
 import matplotlib.pyplot as plt
 from q21_fsm import Q21FSM
 from q22_fsm import Q22FSM
+from q32_fsm import Q32_SQUARE_FSM
 from system import system
 
+T_END = 500
+
+SHAPE = "ellipse" "square" # "clover" 
+
+SQUARE_DIR = {"q0State":(+1,+1), "q1State":(+1,-1), 
+              "q2State":(-1, -1), "q3State":(-1, +1)}
+
+
+def u_drawing_square(t, x, theta_ref):
+    e_theta_l = theta_ref[0] - x[0]
+    e_theta_r = theta_ref[1] - x[1]
+
+    u_ml = e.Kp_pos*e_theta_l  - e.Kd_pos*x[2]
+    u_mr = e.Kp_pos* e_theta_r - e.Kd_pos*x[3]
+    return np.array([u_ml, u_mr, p.heater_u_nom])
+
+def square_corner_reached(t,x,theta_ref):
+    offset_theta_l = abs(x[0]-theta_ref[0])
+    offset_theta_r = abs(x[1]-theta_ref[1])
+    vel_motors = np.sqrt(x[2]**2 + x[3]**2)
+    return max(offset_theta_l -e.threshold_bound_theta,
+               offset_theta_r - e.threshold_bound_theta,
+               vel_motors- e.threshold_bound_omega)
+
+def make_corner_guard(theta_ref):
+    def corner_guard(t,x):
+        return square_corner_reached(t,x,theta_ref)
+    corner_guard.terminal =True
+    corner_guard.direction = -1
+    return corner_guard
+
 def u_printing(t,x):
-    w  = 2 * np.pi / f.time_loop # TODO placeholder needs to be square
-    #return draw_ellipse (t, i.x_center,i.y_center, f.a, f.b, w)
-    return draw_clover(t, i.x_center,i.y_center, c.a,c.b, w)
+    w  = 2 * np.pi / f.time_loop
+    return draw_ellipse (t, i.x_center,i.y_center, f.a, f.b, w)
+    #return draw_clover(t, i.x_center,i.y_center, c.a,c.b, w)
 
 def filament_finished(t,x):
     return x[9] - e.S_max
@@ -153,10 +187,9 @@ def reset_filament_loaded(x):
     x[10] = 0.0 # Reset tau
     return x
 
-#TODO check the reset with the report
 GUARDS = {
     0:[(filament_finished, "new_filament_req", reset_save_position),
-       (colour_change, "new_colour_req", reset_save_position)], # TODO add colour change, resest not correct
+       (colour_change, "new_colour_req", reset_save_position)],
     (2,"q0State"): [(x_bound_reached, "H0", no_reset),
                     (y_bound_reached, "V0", no_reset)],
     (2,"q1State"): [(y_bound_reached, "V0", no_reset),
@@ -188,29 +221,38 @@ def simulate_hybrid(x0, fsm, t_end):
     q22 = Q22FSM()
 
     t, x= 0.0, x0
-
     t_shift = 0.0
     t_stop = 0.0
 
+    q32 = Q32_SQUARE_FSM()
+    theta_ref = None
+    dtheta = sq.side_length/p.r_m # dtheta based on L_square
+
     actions = []
     while t < t_end:
-
         q = fsm.current_state.value
-
-        if q ==2:
+        if q == 2:
             key = (2,q22.current_state.id)
         else:
             key = q
-            
         if key not in CONTROLLERS:
-            print(f"state not in controlles")
+            print(f"state not in controllers")
             break
-
+        
         crtl = CONTROLLERS[key]
-        if key == 0:
-            crtl = lambda t, x: time_shift(t, x, t_shift)
-
         guards = GUARDS[key]
+
+        if key == 0:
+            if SHAPE == "square":
+                square_corner = q32.current_state.id
+                if square_corner != "q4State":
+                    if theta_ref is None:
+                        in_l, in_r = SQUARE_DIR[square_corner]
+                        theta_ref = (x[0] +in_l*dtheta, x[1] + in_r*dtheta)
+                    guards = GUARDS[0] + [(make_corner_guard(theta_ref), "corner", no_reset)]
+                crtl = lambda t, x, ref=theta_ref :u_drawing_square(t,x, ref)
+            else:
+                crtl = lambda t, x: time_shift(t, x, t_shift)
 
         sol =  solve_ivp(lambda t,x :system(t, x, crtl(t,x),q),
                             (t, t_end), x, method="Radau",
@@ -237,7 +279,12 @@ def simulate_hybrid(x0, fsm, t_end):
         if event_name == "at_saved_loc":
             t_shift += t - t_stop
 
-        if event_name in ("V0", "H0", "H1", "V1"):
+        if event_name == "corner":
+            q32.send(f"event{int(square_corner[1])+1}")
+            if q32.current_state.id != "q4State":
+                theta_ref = None # Reset the theta_ref
+
+        elif event_name in ("V0", "H0", "H1", "V1"):
             q22.send(event_name)
             if q22.current_state.id == "q3State":
                 fsm.send("at_wipe_loc")
@@ -255,14 +302,21 @@ if __name__=="__main__":
     #     fsm.send(event)
 
     w = 2*np.pi / f.time_loop
-    #x_ref, y_ref = reference_ellipse(0, i.x_center, i.y_center, f.a, f.b, w)
-    x_ref, y_ref = reference_clover(0, i.x_center, i.y_center, c.a, c.b, w)    
+
+    x_ref, y_ref = reference_ellipse(0, i.x_center, i.y_center, f.a, f.b, w)
+    #x_ref, y_ref = reference_clover(0, i.x_center, i.y_center, c.a, c.b, w)    
     x0 = intial_state(x_ref, y_ref)
+    if SHAPE == "square":
+        x0 = np.zeros(13)
+        x0[0] = (sq.x_start + sq.y_start)/p.r_m
+        x0[1] = (sq.x_start - sq.y_start)/p.r_m
+        x0[6] = 220
     x0[7] = 14
     x0[8] = 1
 
 
-    actions = simulate_hybrid(x0, fsm, t_end=1500)
+
+    actions = simulate_hybrid(x0, fsm, t_end=T_END)
     fig, ((ax_T, ax_wipe), (ax_q, ax_pos)) = plt.subplots(2,2, figsize=(14,10))
     for t_act, x_act, q in actions:
         x_pos_plot = (p.r_m/2)* (x_act[0] + x_act[1])
@@ -277,11 +331,12 @@ if __name__=="__main__":
     ax_T.set_ylabel("T nozzle [°C]")
     ax_wipe.set_title("Wiping")
     ax_wipe.set_ylabel("y [m]")
-    ax_wipe.set_xlabel("t [s]")
+    # ax_wipe.set_xlabel("t [s]")
     ax_pos.set_ylabel("y [m]")
     ax_pos.set_xlabel("x [m]")
     ax_pos.set_xlim(-0.02,b.xmax+0.02)
     ax_pos.set_ylim(-0.02,b.ymax+0.02)
+    ax_pos.set_aspect("equal", adjustable="box")
     ax_pos.set_title("Position")
     ax_wipe.set_title("Y-Coordinate")
     ax_q.set_title("State Tranistions")
