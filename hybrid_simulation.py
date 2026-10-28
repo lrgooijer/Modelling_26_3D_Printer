@@ -12,8 +12,9 @@ from system import system
 # In some plots in the report this is set higher (1000,1500) 
 # to show the ability contuing after return q0State.
 T_END = 500
-# Change the shapes here, for changing from ellipse to clover 
+# Change the shapes here, for changing from ellipse to clover
 # make sure to also change the calls. We left #TODO in front of the required spots.
+# Chaning to square only requires a change here, nothing else.
 SHAPE = "ellipse" #"square" # "clover" 
 
 # If desired, the filament length and colour change time
