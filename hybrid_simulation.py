@@ -10,7 +10,9 @@ from q22_fsm import Q22FSM
 from q32_fsm import Q32_SQUARE_FSM
 from system import system
 
-SHAPE = "square" # "clover"
+T_END = 500
+
+SHAPE = "ellipse" "square" # "clover" 
 
 SQUARE_DIR = {"q0State":(+1,+1), "q1State":(+1,-1), 
               "q2State":(-1, -1), "q3State":(-1, +1)}
@@ -31,6 +33,7 @@ def square_corner_reached(t,x,theta_ref):
     return max(offset_theta_l -e.threshold_bound_theta,
                offset_theta_r - e.threshold_bound_theta,
                vel_motors- e.threshold_bound_omega)
+
 def make_corner_guard(theta_ref):
     def corner_guard(t,x):
         return square_corner_reached(t,x,theta_ref)
@@ -40,8 +43,8 @@ def make_corner_guard(theta_ref):
 
 def u_printing(t,x):
     w  = 2 * np.pi / f.time_loop
-    #return draw_ellipse (t, i.x_center,i.y_center, f.a, f.b, w)
-    return draw_clover(t, i.x_center,i.y_center, c.a,c.b, w)
+    return draw_ellipse (t, i.x_center,i.y_center, f.a, f.b, w)
+    #return draw_clover(t, i.x_center,i.y_center, c.a,c.b, w)
 
 def filament_finished(t,x):
     return x[9] - e.S_max
@@ -184,10 +187,9 @@ def reset_filament_loaded(x):
     x[10] = 0.0 # Reset tau
     return x
 
-#TODO check the reset with the report
 GUARDS = {
     0:[(filament_finished, "new_filament_req", reset_save_position),
-       (colour_change, "new_colour_req", reset_save_position)], # TODO add colour change, resest not correct
+       (colour_change, "new_colour_req", reset_save_position)],
     (2,"q0State"): [(x_bound_reached, "H0", no_reset),
                     (y_bound_reached, "V0", no_reset)],
     (2,"q1State"): [(y_bound_reached, "V0", no_reset),
@@ -300,11 +302,12 @@ if __name__=="__main__":
     #     fsm.send(event)
 
     w = 2*np.pi / f.time_loop
-    #x_ref, y_ref = reference_ellipse(0, i.x_center, i.y_center, f.a, f.b, w)
-    x_ref, y_ref = reference_clover(0, i.x_center, i.y_center, c.a, c.b, w)    
+
+    x_ref, y_ref = reference_ellipse(0, i.x_center, i.y_center, f.a, f.b, w)
+    #x_ref, y_ref = reference_clover(0, i.x_center, i.y_center, c.a, c.b, w)    
     x0 = intial_state(x_ref, y_ref)
     if SHAPE == "square":
-        x0 = np.zeros(13) #TODO is this correct, cant find it atm
+        x0 = np.zeros(13)
         x0[0] = (sq.x_start + sq.y_start)/p.r_m
         x0[1] = (sq.x_start - sq.y_start)/p.r_m
         x0[6] = 220
@@ -313,7 +316,7 @@ if __name__=="__main__":
 
 
 
-    actions = simulate_hybrid(x0, fsm, t_end=1500)
+    actions = simulate_hybrid(x0, fsm, t_end=T_END)
     fig, ((ax_T, ax_wipe), (ax_q, ax_pos)) = plt.subplots(2,2, figsize=(14,10))
     for t_act, x_act, q in actions:
         x_pos_plot = (p.r_m/2)* (x_act[0] + x_act[1])
